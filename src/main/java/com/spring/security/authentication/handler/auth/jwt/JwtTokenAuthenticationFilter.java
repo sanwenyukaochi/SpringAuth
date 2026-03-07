@@ -1,15 +1,15 @@
 package com.spring.security.authentication.handler.auth.jwt;
 
+import com.spring.security.authentication.handler.auth.jwt.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.jspecify.annotations.NonNull;
-import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
-import com.spring.security.authentication.handler.auth.jwt.service.JwtService;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -43,8 +43,11 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
     private boolean postOnly = true;
 
     @Override
-    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
-                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain)
+            throws ServletException, IOException {
         log.debug("use JwtTokenAuthenticationFilter");
         if (this.postOnly && !request.getMethod().equals(HttpMethod.POST.name())) {
             throw new AuthenticationServiceException("Authentication method not supported: " + request.getMethod());
@@ -83,8 +86,7 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    @Nullable
-    protected String obtainJwtToken(String jwtToken) {
+    @Nullable protected String obtainJwtToken(String jwtToken) {
         return jwtToken;
     }
 }

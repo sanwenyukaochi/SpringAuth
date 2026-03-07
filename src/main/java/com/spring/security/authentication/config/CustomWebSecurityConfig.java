@@ -1,6 +1,25 @@
 package com.spring.security.authentication.config;
 
+import com.spring.security.authentication.handler.auth.LoginFailHandler;
+import com.spring.security.authentication.handler.auth.LoginSuccessHandler;
 import com.spring.security.authentication.handler.auth.def.DefaultApiAuthenticationFilter;
+import com.spring.security.authentication.handler.auth.email.EmailAuthenticationFilter;
+import com.spring.security.authentication.handler.auth.email.EmailAuthenticationProvider;
+import com.spring.security.authentication.handler.auth.github.GitHubAuthenticationFilter;
+import com.spring.security.authentication.handler.auth.github.GitHubAuthenticationProvider;
+import com.spring.security.authentication.handler.auth.jwt.JwtTokenAuthenticationFilter;
+import com.spring.security.authentication.handler.auth.jwt.JwtTokenAuthenticationProvider;
+import com.spring.security.authentication.handler.auth.jwt.service.JwtService;
+import com.spring.security.authentication.handler.auth.message.SmsAuthenticationFilter;
+import com.spring.security.authentication.handler.auth.message.SmsAuthenticationProvider;
+import com.spring.security.authentication.handler.auth.openApi.OpenApiAuthenticationFilter;
+import com.spring.security.authentication.handler.auth.user.UsernameAuthenticationFilter;
+import com.spring.security.authentication.handler.auth.user.UsernameAuthenticationProvider;
+import com.spring.security.authentication.handler.exception.CustomAuthenticationExceptionHandler;
+import com.spring.security.authentication.handler.exception.CustomAuthorizationExceptionHandler;
+import com.spring.security.authentication.handler.exception.CustomSecurityExceptionHandler;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,27 +35,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.savedrequest.NullRequestCache;
-import com.spring.security.authentication.handler.auth.LoginFailHandler;
-import com.spring.security.authentication.handler.auth.LoginSuccessHandler;
-import com.spring.security.authentication.handler.auth.message.SmsAuthenticationFilter;
-import com.spring.security.authentication.handler.auth.message.SmsAuthenticationProvider;
-import com.spring.security.authentication.handler.auth.user.UsernameAuthenticationFilter;
-import com.spring.security.authentication.handler.auth.user.UsernameAuthenticationProvider;
-import com.spring.security.authentication.handler.auth.github.GitHubAuthenticationFilter;
-import com.spring.security.authentication.handler.auth.github.GitHubAuthenticationProvider;
-import com.spring.security.authentication.handler.auth.email.EmailAuthenticationFilter;
-import com.spring.security.authentication.handler.auth.email.EmailAuthenticationProvider;
-import com.spring.security.authentication.handler.exception.CustomAuthenticationExceptionHandler;
-import com.spring.security.authentication.handler.exception.CustomAuthorizationExceptionHandler;
-import com.spring.security.authentication.handler.exception.CustomSecurityExceptionHandler;
-import com.spring.security.authentication.handler.auth.openApi.OpenApiAuthenticationFilter;
-import com.spring.security.authentication.handler.auth.jwt.JwtTokenAuthenticationFilter;
-import com.spring.security.authentication.handler.auth.jwt.JwtTokenAuthenticationProvider;
-import com.spring.security.authentication.handler.auth.jwt.service.JwtService;
-
-import lombok.RequiredArgsConstructor;
-
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -98,7 +96,14 @@ public class CustomWebSecurityConfig {
      */
     @Bean
     @Order(1)
-    public SecurityFilterChain loginFilterChain(HttpSecurity httpSecurity, LoginSuccessHandler loginSuccessHandler, LoginFailHandler loginFailHandler, UsernameAuthenticationProvider usernameAuthenticationProvider, SmsAuthenticationProvider smsAuthenticationProvider, EmailAuthenticationProvider emailAuthenticationProvider, GitHubAuthenticationProvider gitHubAuthenticationProvider) {
+    public SecurityFilterChain loginFilterChain(
+            HttpSecurity httpSecurity,
+            LoginSuccessHandler loginSuccessHandler,
+            LoginFailHandler loginFailHandler,
+            UsernameAuthenticationProvider usernameAuthenticationProvider,
+            SmsAuthenticationProvider smsAuthenticationProvider,
+            EmailAuthenticationProvider emailAuthenticationProvider,
+            GitHubAuthenticationProvider gitHubAuthenticationProvider) {
         commonHttpSetting(httpSecurity);
         // 使用securityMatcher限定当前配置作用的路径
         httpSecurity
@@ -106,19 +111,23 @@ public class CustomWebSecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated());
 
         // 加一个登录方式。用户名、密码登录
-        UsernameAuthenticationFilter usernameAuthenticationFilter = new UsernameAuthenticationFilter(new ProviderManager(List.of(usernameAuthenticationProvider)), loginSuccessHandler, loginFailHandler);
+        UsernameAuthenticationFilter usernameAuthenticationFilter = new UsernameAuthenticationFilter(
+                new ProviderManager(List.of(usernameAuthenticationProvider)), loginSuccessHandler, loginFailHandler);
         httpSecurity.addFilterBefore(usernameAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         // 加一个登录方式。短信验证码 登录
-        SmsAuthenticationFilter smsAuthenticationFilter = new SmsAuthenticationFilter(new ProviderManager(List.of(smsAuthenticationProvider)), loginSuccessHandler, loginFailHandler);
+        SmsAuthenticationFilter smsAuthenticationFilter = new SmsAuthenticationFilter(
+                new ProviderManager(List.of(smsAuthenticationProvider)), loginSuccessHandler, loginFailHandler);
         httpSecurity.addFilterBefore(smsAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         // 加一个登录方式。邮箱密码 登录
-        EmailAuthenticationFilter emailAuthenticationFilter = new EmailAuthenticationFilter(new ProviderManager(List.of(emailAuthenticationProvider)), loginSuccessHandler, loginFailHandler);
+        EmailAuthenticationFilter emailAuthenticationFilter = new EmailAuthenticationFilter(
+                new ProviderManager(List.of(emailAuthenticationProvider)), loginSuccessHandler, loginFailHandler);
         httpSecurity.addFilterBefore(emailAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         // 加一个登录方式。GitHub OAuth2 登录
-        GitHubAuthenticationFilter githubAuthenticationFilter = new GitHubAuthenticationFilter(new ProviderManager(List.of(gitHubAuthenticationProvider)), loginSuccessHandler, loginFailHandler);
+        GitHubAuthenticationFilter githubAuthenticationFilter = new GitHubAuthenticationFilter(
+                new ProviderManager(List.of(gitHubAuthenticationProvider)), loginSuccessHandler, loginFailHandler);
         httpSecurity.addFilterBefore(githubAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return httpSecurity.build();
@@ -151,7 +160,8 @@ public class CustomWebSecurityConfig {
         commonHttpSetting(httpSecurity);
         // 使用securityMatcher限定当前配置作用的路径
         httpSecurity
-                .securityMatcher("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**")
+                .securityMatcher(
+                        "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**")
                 .securityMatcher("/api/public-api/**")
                 .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll());
         return httpSecurity.build();
@@ -162,14 +172,16 @@ public class CustomWebSecurityConfig {
      */
     @Bean
     @Order(4)
-    public SecurityFilterChain JwtTokenApiFilterChain(HttpSecurity http, JwtService jwtService, JwtTokenAuthenticationProvider jwtTokenAuthenticationProvider) {
+    public SecurityFilterChain JwtTokenApiFilterChain(
+            HttpSecurity http, JwtService jwtService, JwtTokenAuthenticationProvider jwtTokenAuthenticationProvider) {
         commonHttpSetting(http);
         // 使用securityMatcher限定当前配置作用的路径
         http.securityMatcher("/api/**")
                 .authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated());
 
         // 创建JWT认证过滤器，使用AuthenticationManager
-        JwtTokenAuthenticationFilter jwtFilter = new JwtTokenAuthenticationFilter(jwtService, new ProviderManager(List.of(jwtTokenAuthenticationProvider)));
+        JwtTokenAuthenticationFilter jwtFilter = new JwtTokenAuthenticationFilter(
+                jwtService, new ProviderManager(List.of(jwtTokenAuthenticationProvider)));
         jwtFilter.setPostOnly(false);
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
@@ -178,10 +190,12 @@ public class CustomWebSecurityConfig {
     /**
      * 其余路径，走这个默认过滤链
      */
-
     @Bean
     @Order(Integer.MAX_VALUE) // 这个过滤链最后加载
-    @ConditionalOnProperty(name = "spring.security.default-api-filter-chain", havingValue = "true", matchIfMissing = false)
+    @ConditionalOnProperty(
+            name = "spring.security.default-api-filter-chain",
+            havingValue = "true",
+            matchIfMissing = false)
     public SecurityFilterChain defaultApiFilterChain(HttpSecurity http) {
         commonHttpSetting(http);
         // 不用securityMatcher表示缺省值，匹配不上其他过滤链时，都走这个过滤链
@@ -189,6 +203,4 @@ public class CustomWebSecurityConfig {
         http.addFilterBefore(new DefaultApiAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
-
-
 }

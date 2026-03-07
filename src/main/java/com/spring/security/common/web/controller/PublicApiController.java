@@ -1,9 +1,10 @@
 package com.spring.security.common.web.controller;
 
-import com.spring.security.common.web.exception.BaseException;
 import com.spring.security.domain.model.dto.Result;
 import com.spring.security.domain.model.entity.User;
 import com.spring.security.domain.repository.UserRepository;
+import java.util.Map;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -13,9 +14,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Map;
-import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -29,9 +27,8 @@ public class PublicApiController {
     @GetMapping
     public Result<Map<String, String>> encode() {
         String encode = passwordEncoder.encode("admin");
-        return Result.success(Map.of(
-                "passwordEncoder", Optional.ofNullable(encode).orElseThrow(IllegalArgumentException::new)
-        ));
+        return Result.success(
+                Map.of("passwordEncoder", Optional.ofNullable(encode).orElseThrow(IllegalArgumentException::new)));
     }
 
     @GetMapping("/user")
@@ -40,8 +37,6 @@ public class PublicApiController {
         return Result.success(userPage.map(user -> Map.of(
                 "id", user.getId(),
                 "username", user.getUsername(),
-                "phone", user.getPhone()
-        )));
+                "phone", user.getPhone())));
     }
-
 }

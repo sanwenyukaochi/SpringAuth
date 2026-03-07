@@ -1,6 +1,7 @@
 package com.spring.security.common.cache.config;
 
 import com.spring.security.common.cache.constant.RedisCache;
+import java.time.Duration;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.codec.JsonJacksonCodec;
@@ -20,8 +21,6 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 
-import java.time.Duration;
-
 @Configuration
 @EnableCaching
 public class RedisCacheConfig {
@@ -29,12 +28,14 @@ public class RedisCacheConfig {
     @Bean(destroyMethod = "shutdown")
     public RedissonClient redissonClient(RedisConnectionFactory redisConnectionFactory) {
         final String REDIS_ADDRESS = RedisURI.REDIS_PROTOCOL + "%s:%d";
-        RedisStandaloneConfiguration redisConfig = ((LettuceConnectionFactory) redisConnectionFactory).getStandaloneConfiguration();
+        RedisStandaloneConfiguration redisConfig =
+                ((LettuceConnectionFactory) redisConnectionFactory).getStandaloneConfiguration();
         Config redissonConfig = new Config();
         redissonConfig.setCodec(new JsonJacksonCodec());
         redissonConfig.setUsername(redisConfig.getUsername());
         redissonConfig.setPassword(new String(redisConfig.getPassword().get()));
-        redissonConfig.useSingleServer()
+        redissonConfig
+                .useSingleServer()
                 .setAddress(REDIS_ADDRESS.formatted(redisConfig.getHostName(), redisConfig.getPort()))
                 .setDatabase(redisConfig.getDatabase());
         return Redisson.create(redissonConfig);
@@ -42,15 +43,19 @@ public class RedisCacheConfig {
 
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
-        //启用锁机制
+        // 启用锁机制
         RedisCacheWriter cacheWriter = RedisCacheWriter.lockingRedisCacheWriter(redisConnectionFactory);
-        //序列化配置
+        // 序列化配置
         RedisCacheConfiguration defaultCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
-                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(GenericJacksonJsonRedisSerializer.builder()
-                        .enableDefaultTyping(BasicPolymorphicTypeValidator.builder().allowIfBaseType(Object.class).build())
-                        .enableSpringCacheNullValueSupport()
-                        .build()))
+                .serializeKeysWith(
+                        RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(
+                        GenericJacksonJsonRedisSerializer.builder()
+                                .enableDefaultTyping(BasicPolymorphicTypeValidator.builder()
+                                        .allowIfBaseType(Object.class)
+                                        .build())
+                                .enableSpringCacheNullValueSupport()
+                                .build()))
                 .disableCachingNullValues()
                 .entryTtl(Duration.ofMillis(RedisCache.DEFAULT_TTL));
         return RedisCacheManager.builder(cacheWriter)
@@ -58,5 +63,4 @@ public class RedisCacheConfig {
                 .transactionAware()
                 .build();
     }
-
 }

@@ -19,7 +19,8 @@ public class GitHubLoginConfigController {
     @GetMapping("/config")
     public Result<GitHubOAuthConfigResponse> config() {
         ClientRegistration registration = registrationRepository.findByRegistrationId("github");
-        GitHubOAuthConfigResponse data = new GitHubOAuthConfigResponse(registration.getClientId(), registration.getRedirectUri());
+        GitHubOAuthConfigResponse data =
+                new GitHubOAuthConfigResponse(registration.getClientId(), registration.getRedirectUri());
         return Result.success(data);
     }
 }

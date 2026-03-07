@@ -7,6 +7,9 @@ import com.spring.security.common.cache.constant.RedisCache;
 import com.spring.security.common.web.enums.BaseCode;
 import com.spring.security.common.web.exception.BaseException;
 import com.spring.security.domain.model.entity.User;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -23,10 +26,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import tools.jackson.databind.json.JsonMapper;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
 /**
  * JWT认证提供者
  */
@@ -41,12 +40,15 @@ public class JwtTokenAuthenticationProvider implements AuthenticationProvider {
     @Override
     @SneakyThrows
     public Authentication authenticate(@NonNull Authentication authentication) throws AuthenticationException {
-        Assert.isInstanceOf(JwtTokenAuthenticationToken.class, authentication,
-                () -> this.messages.getMessage("JwtTokenAuthenticationProvider.onlySupports",
-                        "仅支持JWT身份验证提供程序"));
+        Assert.isInstanceOf(
+                JwtTokenAuthenticationToken.class,
+                authentication,
+                () -> this.messages.getMessage("JwtTokenAuthenticationProvider.onlySupports", "仅支持JWT身份验证提供程序"));
         JwtTokenAuthenticationToken jwtTokenAuthenticationToken = (JwtTokenAuthenticationToken) authentication;
         // 获取用户提交的JWT
-        String jwtToken = (jwtTokenAuthenticationToken.getJwtToken() == null ? "NONE_PROVIDED" : jwtTokenAuthenticationToken.getJwtToken());
+        String jwtToken = (jwtTokenAuthenticationToken.getJwtToken() == null
+                ? "NONE_PROVIDED"
+                : jwtTokenAuthenticationToken.getJwtToken());
         // 查询用户信息
         User user = retrieveUser(jwtToken, jwtTokenAuthenticationToken);
         // 验证用户信息
@@ -60,10 +62,11 @@ public class JwtTokenAuthenticationProvider implements AuthenticationProvider {
         return JwtTokenAuthenticationToken.class.isAssignableFrom(authentication);
     }
 
-    protected Authentication createSuccessAuthentication(Authentication authentication,
-                                                         User user) {
+    protected Authentication createSuccessAuthentication(Authentication authentication, User user) {
         UserLoginInfo userLoginInfo = (UserLoginInfo) redissonClient
-                .getBucket(RedisCache.USER_INFO.formatted(user.getUsername()), new TypedJsonJacksonCodec(UserLoginInfo.class))
+                .getBucket(
+                        RedisCache.USER_INFO.formatted(user.getUsername()),
+                        new TypedJsonJacksonCodec(UserLoginInfo.class))
                 .get();
         // 认证通过，使用 Authenticated 为 true 的构造函数
         JwtTokenAuthenticationToken result = new JwtTokenAuthenticationToken(userLoginInfo, List.of());
@@ -73,7 +76,8 @@ public class JwtTokenAuthenticationProvider implements AuthenticationProvider {
         return result;
     }
 
-    protected User retrieveUser(String jwtToken, JwtTokenAuthenticationToken authentication) throws AuthenticationException {
+    protected User retrieveUser(String jwtToken, JwtTokenAuthenticationToken authentication)
+            throws AuthenticationException {
         JwtTokenUserLoginInfo jwtTokenUserLoginInfo = jwtService.validateJwtToken(jwtToken);
         User loadedUser = new User();
         loadedUser.setUsername(jwtTokenUserLoginInfo.username());
@@ -82,14 +86,17 @@ public class JwtTokenAuthenticationProvider implements AuthenticationProvider {
         return loadedUser;
     }
 
-    protected void additionalAuthenticationChecks(User user, JwtTokenAuthenticationToken authentication) throws AuthenticationException {
+    protected void additionalAuthenticationChecks(User user, JwtTokenAuthenticationToken authentication)
+            throws AuthenticationException {
         String presentedJwtToken = authentication.getJwtToken();
         UserLoginInfo userLoginInfo = (UserLoginInfo) redissonClient
-                .getBucket(RedisCache.USER_INFO.formatted(user.getUsername()), new TypedJsonJacksonCodec(UserLoginInfo.class))
+                .getBucket(
+                        RedisCache.USER_INFO.formatted(user.getUsername()),
+                        new TypedJsonJacksonCodec(UserLoginInfo.class))
                 .get();
         Optional.ofNullable(presentedJwtToken)
-                .orElseThrow(() -> new BadCredentialsException(this.messages.getMessage("jwtTokenAuthenticationProvider.sessionExpired", "错误的凭证")));
-        Optional.ofNullable(userLoginInfo)
-                .orElseThrow(() -> new BaseException(BaseCode.TOKEN_NOT_FIND_IN_REDIS));
+                .orElseThrow(() -> new BadCredentialsException(
+                        this.messages.getMessage("jwtTokenAuthenticationProvider.sessionExpired", "错误的凭证")));
+        Optional.ofNullable(userLoginInfo).orElseThrow(() -> new BaseException(BaseCode.TOKEN_NOT_FIND_IN_REDIS));
     }
 }

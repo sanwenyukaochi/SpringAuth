@@ -2,9 +2,9 @@ package com.spring.security.common.web.service;
 
 import com.spring.security.common.web.enums.BaseCode;
 import com.spring.security.common.web.exception.BaseException;
-import lombok.RequiredArgsConstructor;
 import com.spring.security.domain.model.entity.User;
 import com.spring.security.domain.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service

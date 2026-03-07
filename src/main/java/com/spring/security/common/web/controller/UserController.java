@@ -22,5 +22,4 @@ public class UserController {
         log.info("用户登录信息：{}", JsonMapper.shared().writeValueAsString(userLoginInfo));
         return Result.success(userLoginInfo);
     }
-
 }

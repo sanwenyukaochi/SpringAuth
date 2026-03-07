@@ -1,14 +1,13 @@
 package com.spring.security.authentication.handler.auth.message;
 
+import com.spring.security.authentication.handler.auth.UserLoginInfo;
+import java.util.Collection;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
-import com.spring.security.authentication.handler.auth.UserLoginInfo;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.util.Assert;
-
-import java.util.Collection;
-import java.util.List;
 
 @Setter
 @Getter
@@ -25,8 +24,7 @@ public class SmsAuthenticationToken extends AbstractAuthenticationToken {
         super.setAuthenticated(false);
     }
 
-    public SmsAuthenticationToken(UserLoginInfo currentUser,
-                                  Collection<? extends GrantedAuthority> authorities) {
+    public SmsAuthenticationToken(UserLoginInfo currentUser, Collection<? extends GrantedAuthority> authorities) {
         this.currentUser = currentUser;
         super(authorities);
         super.setAuthenticated(true);
@@ -51,5 +49,4 @@ public class SmsAuthenticationToken extends AbstractAuthenticationToken {
         super.eraseCredentials();
         this.smsCode = null;
     }
-
 }

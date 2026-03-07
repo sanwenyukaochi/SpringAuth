@@ -1,23 +1,24 @@
 package com.spring.security.common.web.enums;
 
 import com.spring.security.common.web.exception.BaseException;
+import java.util.Arrays;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 
-import java.util.Arrays;
-
 @Getter
 @RequiredArgsConstructor
 public enum BaseCode {
-
     SUCCESS("success", "操作成功", HttpStatus.OK),
     SYSTEM_ERROR("common.system_error", "系统异常，请稍后重试", HttpStatus.INTERNAL_SERVER_ERROR),
     TYPE_ERROR("common.type_error", "类型错误", HttpStatus.BAD_REQUEST),
     HTTP_METHOD_NOT_ALLOWED("http.method_not_allowed", "请求方法不支持", HttpStatus.METHOD_NOT_ALLOWED),
     RESOURCE_NOT_FOUND("resource.not_found", "资源未找到", HttpStatus.NOT_FOUND),
     AUTHENTICATION_ERROR("authentication.error", "认证失败", HttpStatus.UNAUTHORIZED),
-    AUTHENTICATION_TYPE_ERROR("authentication.type_error", "登陆认证成功后，authentication.getPrincipal()返回的Object对象必须是：UserLoginInfo！", HttpStatus.INTERNAL_SERVER_ERROR),
+    AUTHENTICATION_TYPE_ERROR(
+            "authentication.type_error",
+            "登陆认证成功后，authentication.getPrincipal()返回的Object对象必须是：UserLoginInfo！",
+            HttpStatus.INTERNAL_SERVER_ERROR),
     AUTH_LOGIN_FAILED("auth.login_failed", "登陆失败", HttpStatus.UNAUTHORIZED),
     AUTH_INVALID_CREDENTIALS("auth.invalid_credentials", "错误的凭证", HttpStatus.UNAUTHORIZED),
     TOKEN_MALFORMED("token.malformed", "JWT Token 无效", HttpStatus.UNAUTHORIZED),

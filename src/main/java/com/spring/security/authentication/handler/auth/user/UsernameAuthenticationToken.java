@@ -1,15 +1,14 @@
 package com.spring.security.authentication.handler.auth.user;
 
+import com.spring.security.authentication.handler.auth.UserLoginInfo;
+import java.util.Collection;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
-import com.spring.security.authentication.handler.auth.UserLoginInfo;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.util.Assert;
-
-import java.util.Collection;
-import java.util.List;
 
 /**
  * SpringSecurity传输登录认证的数据的载体，相当一个Dto
@@ -32,8 +31,7 @@ public class UsernameAuthenticationToken extends AbstractAuthenticationToken {
         super.setAuthenticated(false);
     }
 
-    public UsernameAuthenticationToken(UserLoginInfo currentUser,
-                                       Collection<? extends GrantedAuthority> authorities) {
+    public UsernameAuthenticationToken(UserLoginInfo currentUser, Collection<? extends GrantedAuthority> authorities) {
         this.currentUser = currentUser;
         super(authorities);
         super.setAuthenticated(true);
@@ -60,5 +58,4 @@ public class UsernameAuthenticationToken extends AbstractAuthenticationToken {
         super.eraseCredentials();
         this.password = null;
     }
-
 }

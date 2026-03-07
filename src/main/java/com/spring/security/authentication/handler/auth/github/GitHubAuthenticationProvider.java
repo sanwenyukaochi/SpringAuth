@@ -1,29 +1,28 @@
 package com.spring.security.authentication.handler.auth.github;
 
+import com.spring.security.authentication.handler.auth.UserLoginInfo;
 import com.spring.security.authentication.handler.auth.github.dto.GitHubOAuthMeta;
+import com.spring.security.authentication.handler.auth.github.service.GitHubOAuth2Service;
 import com.spring.security.common.web.enums.BaseCode;
 import com.spring.security.common.web.exception.BaseException;
 import com.spring.security.domain.model.entity.User;
-import org.springframework.context.support.MessageSourceAccessor;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.SpringSecurityMessageSource;
-import org.springframework.util.Assert;
-import tools.jackson.databind.json.JsonMapper;
+import com.spring.security.domain.model.entity.UserIdentity;
 import com.spring.security.domain.repository.UserIdentityRepository;
 import com.spring.security.domain.repository.UserRepository;
+import java.util.*;
 import lombok.RequiredArgsConstructor;
-import com.spring.security.authentication.handler.auth.UserLoginInfo;
-import com.spring.security.authentication.handler.auth.github.service.GitHubOAuth2Service;
-import com.spring.security.domain.model.entity.UserIdentity;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.SpringSecurityMessageSource;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
-
-import java.util.*;
+import org.springframework.util.Assert;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * GITHUB认证提供者
@@ -39,12 +38,14 @@ public class GitHubAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public Authentication authenticate(@NonNull Authentication authentication) throws AuthenticationException {
-        Assert.isInstanceOf(GitHubAuthenticationToken.class, authentication,
-                () -> this.messages.getMessage("GitHubAuthenticationProvider.onlySupports",
-                        "仅支持GitHub身份验证提供程序"));
+        Assert.isInstanceOf(
+                GitHubAuthenticationToken.class,
+                authentication,
+                () -> this.messages.getMessage("GitHubAuthenticationProvider.onlySupports", "仅支持GitHub身份验证提供程序"));
         GitHubAuthenticationToken gitHubAuthenticationToken = (GitHubAuthenticationToken) authentication;
         // 获取用户提交的手机号
-        String code = (gitHubAuthenticationToken.getCode() == null ? "NONE_PROVIDED" : gitHubAuthenticationToken.getCode());
+        String code =
+                (gitHubAuthenticationToken.getCode() == null ? "NONE_PROVIDED" : gitHubAuthenticationToken.getCode());
         // 查询用户信息
         User user = retrieveUser(code, gitHubAuthenticationToken);
         // 验证用户信息
@@ -58,9 +59,20 @@ public class GitHubAuthenticationProvider implements AuthenticationProvider {
         return GitHubAuthenticationToken.class.isAssignableFrom(authentication);
     }
 
-    protected Authentication createSuccessAuthentication(Authentication authentication,
-                                                         User user) {
-        UserLoginInfo userLoginInfo = new UserLoginInfo(UUID.randomUUID().toString(), user.getId(), user.getUsername(), user.getPassword(), user.getPhone(), user.getEmail(), user.getAccountNonLocked(), user.getAccountNonLocked(), user.getCredentialsNonExpired(), user.getEnabled(), user.getTwoFactorSecret(), user.getTwoFactorEnabled());
+    protected Authentication createSuccessAuthentication(Authentication authentication, User user) {
+        UserLoginInfo userLoginInfo = new UserLoginInfo(
+                UUID.randomUUID().toString(),
+                user.getId(),
+                user.getUsername(),
+                user.getPassword(),
+                user.getPhone(),
+                user.getEmail(),
+                user.getAccountNonLocked(),
+                user.getAccountNonLocked(),
+                user.getCredentialsNonExpired(),
+                user.getEnabled(),
+                user.getTwoFactorSecret(),
+                user.getTwoFactorEnabled());
         // 认证通过，使用 Authenticated 为 true 的构造函数
         GitHubAuthenticationToken result = new GitHubAuthenticationToken(userLoginInfo, List.of());
         // 必须转化成Map
@@ -90,12 +102,13 @@ public class GitHubAuthenticationProvider implements AuthenticationProvider {
         return loadedUser;
     }
 
-    protected void additionalAuthenticationChecks(User user, GitHubAuthenticationToken authentication) throws AuthenticationException {
+    protected void additionalAuthenticationChecks(User user, GitHubAuthenticationToken authentication)
+            throws AuthenticationException {
         String presentedCode = authentication.getCode();
         if (presentedCode == null || user == null) {
             log.debug("身份验证失败，因为身份与数据库存储的值不匹配");
-            throw new BadCredentialsException(this.messages
-                    .getMessage("gitHubAuthenticationProvider.sessionExpired", "错误的凭证"));
+            throw new BadCredentialsException(
+                    this.messages.getMessage("gitHubAuthenticationProvider.sessionExpired", "错误的凭证"));
         }
     }
 }

@@ -1,16 +1,15 @@
 package com.spring.security.authentication.handler.auth.user;
 
-import lombok.Setter;
-import org.jspecify.annotations.Nullable;
-import org.springframework.security.authentication.AuthenticationServiceException;
-import tools.jackson.databind.json.JsonMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
@@ -18,6 +17,7 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * 用户名密码登录
@@ -30,28 +30,31 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 @Setter
 public class UsernameAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
-    private static final RequestMatcher DEFAULT_ANT_PATH_REQUEST_MATCHER = PathPatternRequestMatcher.withDefaults()
-            .matcher(HttpMethod.POST, "/api/login/application/username");
+    private static final RequestMatcher DEFAULT_ANT_PATH_REQUEST_MATCHER =
+            PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/api/login/application/username");
 
     private boolean postOnly = true;
 
-    public UsernameAuthenticationFilter(AuthenticationManager authenticationManager,
-                                        AuthenticationSuccessHandler authenticationSuccessHandler,
-                                        AuthenticationFailureHandler authenticationFailureHandler) {
+    public UsernameAuthenticationFilter(
+            AuthenticationManager authenticationManager,
+            AuthenticationSuccessHandler authenticationSuccessHandler,
+            AuthenticationFailureHandler authenticationFailureHandler) {
         super(DEFAULT_ANT_PATH_REQUEST_MATCHER, authenticationManager);
         setAuthenticationSuccessHandler(authenticationSuccessHandler);
         setAuthenticationFailureHandler(authenticationFailureHandler);
     }
 
     @Override
-    public Authentication attemptAuthentication(@NonNull HttpServletRequest request,
-                                                @NonNull HttpServletResponse response) throws AuthenticationException, IOException {
+    public Authentication attemptAuthentication(
+            @NonNull HttpServletRequest request, @NonNull HttpServletResponse response)
+            throws AuthenticationException, IOException {
         log.debug("use UsernameAuthenticationFilter");
         if (this.postOnly && !request.getMethod().equals(HttpMethod.POST.name())) {
             throw new AuthenticationServiceException("Authentication method not supported: " + request.getMethod());
         }
         // 提取请求数据
-        UsernameLoginRequest usernameLoginRequest = JsonMapper.shared().readValue(request.getInputStream(), UsernameLoginRequest.class);
+        UsernameLoginRequest usernameLoginRequest =
+                JsonMapper.shared().readValue(request.getInputStream(), UsernameLoginRequest.class);
         String username = obtainUsername(usernameLoginRequest);
         username = (username != null) ? username.trim() : "";
         String password = obtainPassword(usernameLoginRequest);
@@ -63,13 +66,11 @@ public class UsernameAuthenticationFilter extends AbstractAuthenticationProcessi
         return getAuthenticationManager().authenticate(authentication);
     }
 
-    @Nullable
-    protected String obtainPassword(UsernameLoginRequest usernameLoginRequest) {
+    @Nullable protected String obtainPassword(UsernameLoginRequest usernameLoginRequest) {
         return usernameLoginRequest.password();
     }
 
-    @Nullable
-    protected String obtainUsername(UsernameLoginRequest usernameLoginRequest) {
+    @Nullable protected String obtainUsername(UsernameLoginRequest usernameLoginRequest) {
         return usernameLoginRequest.username();
     }
 }

@@ -22,18 +22,17 @@ public class GitHubOAuth2Service {
 
     public OAuth2User authenticateByCode(String code) {
         ClientRegistration registration = registrationRepository.findByRegistrationId("github");
-        OAuth2AuthorizationExchange authorizationExchange =
-                new OAuth2AuthorizationExchange(
-                        OAuth2AuthorizationRequest.authorizationCode()
-                                .authorizationUri(registration.getProviderDetails().getAuthorizationUri())
-                                .clientId(registration.getClientId())
-                                .redirectUri(registration.getRedirectUri())
-                                .scopes(registration.getScopes())
-                                .state("state")
-                                .build(),
-                        OAuth2AuthorizationResponse.success(code)
-                                .redirectUri(registration.getRedirectUri())
-                                .build());
+        OAuth2AuthorizationExchange authorizationExchange = new OAuth2AuthorizationExchange(
+                OAuth2AuthorizationRequest.authorizationCode()
+                        .authorizationUri(registration.getProviderDetails().getAuthorizationUri())
+                        .clientId(registration.getClientId())
+                        .redirectUri(registration.getRedirectUri())
+                        .scopes(registration.getScopes())
+                        .state("state")
+                        .build(),
+                OAuth2AuthorizationResponse.success(code)
+                        .redirectUri(registration.getRedirectUri())
+                        .build());
 
         OAuth2AccessTokenResponse tokenResponse = new RestClientAuthorizationCodeTokenResponseClient()
                 .getTokenResponse(new OAuth2AuthorizationCodeGrantRequest(registration, authorizationExchange));

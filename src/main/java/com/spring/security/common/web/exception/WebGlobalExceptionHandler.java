@@ -1,12 +1,11 @@
 package com.spring.security.common.web.exception;
 
 import com.spring.security.common.web.enums.BaseCode;
+import com.spring.security.domain.model.dto.Result;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import com.spring.security.domain.model.dto.Result;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -33,21 +32,33 @@ public class WebGlobalExceptionHandler {
     }
 
     @ExceptionHandler(value = HttpRequestMethodNotSupportedException.class)
-    public Result<?> exceptionHandler(HttpServletRequest request, HttpServletResponse response, HttpRequestMethodNotSupportedException e) {
+    public Result<?> exceptionHandler(
+            HttpServletRequest request, HttpServletResponse response, HttpRequestMethodNotSupportedException e) {
         response.setStatus(HttpStatus.METHOD_NOT_ALLOWED.value());
         logWarn("请求方法异常", BaseCode.HTTP_METHOD_NOT_ALLOWED.getCode(), e.getMessage(), request, e);
-        return Result.error(BaseCode.HTTP_METHOD_NOT_ALLOWED.getCode(), BaseCode.HTTP_METHOD_NOT_ALLOWED.getMessage() + e.getMethod(), null);
+        return Result.error(
+                BaseCode.HTTP_METHOD_NOT_ALLOWED.getCode(),
+                BaseCode.HTTP_METHOD_NOT_ALLOWED.getMessage() + e.getMethod(),
+                null);
     }
 
     @ExceptionHandler(value = NoResourceFoundException.class)
-    public Result<?> exceptionHandler(HttpServletRequest request, HttpServletResponse response, NoResourceFoundException e) {
+    public Result<?> exceptionHandler(
+            HttpServletRequest request, HttpServletResponse response, NoResourceFoundException e) {
         response.setStatus(HttpStatus.NOT_FOUND.value());
         logWarn("请求资源异常", BaseCode.RESOURCE_NOT_FOUND.getCode(), e.getMessage(), request, e);
         return Result.error(BaseCode.RESOURCE_NOT_FOUND.getCode(), e.getMessage(), null);
     }
 
     private void logWarn(String biz, String code, String message, HttpServletRequest request, Throwable e) {
-        log.warn("{} code={}, 错误信息={}, method={}, url={}, query={}", biz, code, message, request.getMethod(), request.getRequestURI(), request.getQueryString(), e);
+        log.warn(
+                "{} code={}, 错误信息={}, method={}, url={}, query={}",
+                biz,
+                code,
+                message,
+                request.getMethod(),
+                request.getRequestURI(),
+                request.getQueryString(),
+                e);
     }
-
 }

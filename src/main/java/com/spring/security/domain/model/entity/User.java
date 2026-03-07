@@ -1,14 +1,13 @@
 package com.spring.security.domain.model.entity;
 
+import com.spring.security.domain.model.entity.base.BaseEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.Accessors;
 import jakarta.persistence.Column;
-import com.spring.security.domain.model.entity.base.BaseEntity;
-
 import java.util.ArrayList;
 import java.util.List;
+import lombok.*;
+import lombok.experimental.Accessors;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -17,11 +16,10 @@ import java.util.List;
 @Table(
         name = "sys_user",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_user_username", columnNames = "username"),
-                @UniqueConstraint(name = "uk_user_email", columnNames = "email")
+            @UniqueConstraint(name = "uk_user_username", columnNames = "username"),
+            @UniqueConstraint(name = "uk_user_email", columnNames = "email")
         },
-        comment = "用户表"
-)
+        comment = "用户表")
 @Schema(name = "User", title = "用户对象", description = "系统用户实体，包含认证和状态信息")
 public class User extends BaseEntity {
 
@@ -69,5 +67,4 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
     private List<UserIdentity> identities = new ArrayList<>();
-
 }

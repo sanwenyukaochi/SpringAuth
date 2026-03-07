@@ -22,17 +22,14 @@ public class SwaggerConfig {
                 .bearerFormat("JWT")
                 .description("JWT Bearer Token");
 
-        SecurityRequirement bearerRequirement = new SecurityRequirement()
-                .addList("Bearer Authentication");
+        SecurityRequirement bearerRequirement = new SecurityRequirement().addList("Bearer Authentication");
 
         return new OpenAPI()
                 .info(new Info()
                         .title("Spring Security API")
                         .version("1.0.0")
                         .description("Spring Security API Document")
-                        .license(new License()
-                                .name("License")
-                                .url("https://www.sanwenyukaochi.license.com"))
+                        .license(new License().name("License").url("https://www.sanwenyukaochi.license.com"))
                         .contact(new Contact()
                                 .name("YiFan Song")
                                 .email("sanwenyukaochi@email.com")
@@ -40,8 +37,7 @@ public class SwaggerConfig {
                 .externalDocs(new ExternalDocumentation()
                         .description("Project Document")
                         .url("https://www.sanwenyukaochi.blog.com"))
-                .components(new Components()
-                        .addSecuritySchemes("Bearer Authentication", bearerScheme))
+                .components(new Components().addSecuritySchemes("Bearer Authentication", bearerScheme))
                 .addSecurityItem(bearerRequirement);
     }
 }

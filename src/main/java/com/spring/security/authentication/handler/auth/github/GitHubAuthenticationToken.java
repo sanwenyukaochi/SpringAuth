@@ -1,14 +1,13 @@
 package com.spring.security.authentication.handler.auth.github;
 
+import com.spring.security.authentication.handler.auth.UserLoginInfo;
+import java.util.Collection;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
-import com.spring.security.authentication.handler.auth.UserLoginInfo;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.util.Assert;
-
-import java.util.Collection;
-import java.util.List;
 
 @Setter
 @Getter
@@ -23,8 +22,7 @@ public class GitHubAuthenticationToken extends AbstractAuthenticationToken {
         super.setAuthenticated(false);
     }
 
-    public GitHubAuthenticationToken(UserLoginInfo currentUser,
-                                     Collection<? extends GrantedAuthority> authorities) {
+    public GitHubAuthenticationToken(UserLoginInfo currentUser, Collection<? extends GrantedAuthority> authorities) {
         super(authorities);
         this.currentUser = currentUser;
         super.setAuthenticated(true);
@@ -51,5 +49,4 @@ public class GitHubAuthenticationToken extends AbstractAuthenticationToken {
         super.eraseCredentials();
         this.code = null;
     }
-
 }

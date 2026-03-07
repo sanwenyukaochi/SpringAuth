@@ -1,10 +1,9 @@
 package com.spring.security.authentication.handler.auth.openApi;
 
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
-
-import java.util.List;
 
 @Setter
 @Getter
@@ -29,5 +28,4 @@ public class OpenApiAuthenticationToken extends AbstractAuthenticationToken {
         // 根据SpringSecurity的设计，授权成功之前，getPrincipal返回的客户端传过来的数据。授权成功后，返回当前登陆用户的信息
         return isAuthenticated() ? currentUser : appId;
     }
-
 }

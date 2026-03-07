@@ -2,11 +2,10 @@ package com.spring.security.domain.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import java.util.List;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.util.Assert;
-
-import java.util.List;
 
 @JsonPropertyOrder({"content", "page"})
 public record PagedModel<T>(Page<@NonNull T> page) {
@@ -30,12 +29,17 @@ public record PagedModel<T>(Page<@NonNull T> page) {
                 page.getTotalPages(),
                 page.isFirst(),
                 page.isLast(),
-                page.hasNext()
-        );
+                page.hasNext());
     }
 
-    public record PageMetadata(long size, long number, long totalElements, long totalPages,
-                               boolean isFirst, boolean isLast, boolean hasNext) {
+    public record PageMetadata(
+            long size,
+            long number,
+            long totalElements,
+            long totalPages,
+            boolean isFirst,
+            boolean isLast,
+            boolean hasNext) {
 
         public PageMetadata {
             Assert.isTrue(size > -1, "Size must not be negative!");

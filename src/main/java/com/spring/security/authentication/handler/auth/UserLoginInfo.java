@@ -1,13 +1,12 @@
 package com.spring.security.authentication.handler.auth;
 
-import lombok.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Collection;
+import java.util.List;
+import lombok.*;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
-import java.util.Collection;
-import java.util.List;
 
 /**
  * 用户信息登陆后的信息，会序列化到Jwt的payload
@@ -22,7 +21,10 @@ public class UserLoginInfo implements UserDetails {
     private String sessionId; // 会话id，全局唯一
     private Long id;
     private String username;
-    @JsonIgnore private String password;
+
+    @JsonIgnore
+    private String password;
+
     private String phone;
     private String email;
     private Boolean accountNonLocked;
@@ -34,7 +36,7 @@ public class UserLoginInfo implements UserDetails {
 
     @Override
     public @NonNull Collection<? extends GrantedAuthority> getAuthorities() {
-        //TODO 权限
+        // TODO 权限
         return List.of();
     }
 

@@ -8,16 +8,15 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import tools.jackson.databind.json.JsonMapper;
-
-import javax.crypto.SecretKey;
 import java.security.Key;
 import java.util.Date;
+import javax.crypto.SecretKey;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.stereotype.Component;
+import tools.jackson.databind.json.JsonMapper;
 
 @Slf4j
 @Component
@@ -38,11 +37,14 @@ public class JwtService {
     public String getUserNameFromJwtToken(String authToken) {
         return Jwts.parser()
                 .verifyWith((SecretKey) key())
-                .build().parseSignedClaims(authToken)
-                .getPayload().getSubject();
+                .build()
+                .parseSignedClaims(authToken)
+                .getPayload()
+                .getSubject();
     }
 
-    public String generateTokenFromUsername(String username, JwtTokenUserLoginInfo jwtTokenUserLoginInfo, long expiredTime) {
+    public String generateTokenFromUsername(
+            String username, JwtTokenUserLoginInfo jwtTokenUserLoginInfo, long expiredTime) {
         String json = JsonMapper.shared().writeValueAsString(jwtTokenUserLoginInfo);
         return Jwts.builder()
                 .subject(username)
@@ -59,7 +61,8 @@ public class JwtService {
 
     public JwtTokenUserLoginInfo validateJwtToken(String authToken) {
         try {
-            Jws<Claims> claimsJws = Jwts.parser().verifyWith((SecretKey) key()).build().parseSignedClaims(authToken);
+            Jws<Claims> claimsJws =
+                    Jwts.parser().verifyWith((SecretKey) key()).build().parseSignedClaims(authToken);
             Claims claims = claimsJws.getPayload();
             String json = claims.get(JWTConstants.USER_INFO, String.class);
             return JsonMapper.shared().readValue(json, JwtTokenUserLoginInfo.class);

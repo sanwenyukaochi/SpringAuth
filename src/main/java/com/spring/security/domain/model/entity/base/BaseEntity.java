@@ -21,5 +21,4 @@ public abstract class BaseEntity {
     @Column(comment = "主键ID", name = "id", nullable = false)
     @Schema(title = "主键ID", name = "id")
     private Long id;
-
 }

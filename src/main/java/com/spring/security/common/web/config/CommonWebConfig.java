@@ -1,6 +1,9 @@
 package com.spring.security.common.web.config;
 
 import com.spring.security.domain.model.dto.PagedModel;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.util.Optional;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -16,10 +19,6 @@ import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.module.SimpleModule;
 
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.util.Optional;
-
 @Configuration
 @EnableJpaAuditing
 @EnableConfigurationProperties(CommonWebConfig.ProxyProperties.class)
@@ -34,28 +33,24 @@ public class CommonWebConfig {
 
         Optional.of(proxyProperties)
                 .filter(ProxyProperties::enabled)
-                .ifPresent(p -> factory.setProxy(
-                        new Proxy(Proxy.Type.HTTP, new InetSocketAddress(p.host(), p.port()))
-                ));
+                .ifPresent(
+                        p -> factory.setProxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(p.host(), p.port()))));
 
         return new RestTemplate(factory);
     }
 
     @ConfigurationProperties(prefix = "spring.proxy")
-    public record ProxyProperties(boolean enabled, String host, int port) {
-    }
+    public record ProxyProperties(boolean enabled, String host, int port) {}
 
     @Bean
     public JacksonModule jacksonModule() {
         SimpleModule simpleModule = new SimpleModule();
         simpleModule.addSerializer(Page.class, new ValueSerializer<>() {
-                    @Override
-                    public void serialize(Page page, JsonGenerator gen, SerializationContext context) throws JacksonException {
-                        context.writeValue(gen, new PagedModel<>((Page<?>) page));
-                    }
-                }
-        );
+            @Override
+            public void serialize(Page page, JsonGenerator gen, SerializationContext context) throws JacksonException {
+                context.writeValue(gen, new PagedModel<>((Page<?>) page));
+            }
+        });
         return simpleModule;
     }
-
 }
