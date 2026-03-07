@@ -2,6 +2,7 @@ plugins {
     java
     id("org.springframework.boot") version "4.0.3"
     id("io.spring.dependency-management") version "1.1.7"
+    id("com.gorylenko.gradle-git-properties") version "2.5.4"
 }
 group = "com.spring.security"
 version = "0.0.1-SNAPSHOT"
@@ -48,6 +49,35 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+springBoot {
+    buildInfo()
+}
+
+gitProperties {
+    failOnNoGitDirectory = false
+    keys = listOf(
+        "git.branch",
+        "git.build.host",
+        "git.build.user.email",
+        "git.build.user.name",
+        "git.build.version",
+        "git.closest.tag.commit.count",
+        "git.closest.tag.name",
+        "git.commit.id",
+        "git.commit.id.abbrev",
+        "git.commit.id.describe",
+        "git.commit.message.full",
+        "git.commit.message.short",
+        "git.commit.time",
+        "git.commit.user.email",
+        "git.commit.user.name",
+        "git.dirty",
+        "git.remote.origin.url",
+        "git.tags",
+        "git.total.commit.count"
+    )
 }
 
 tasks.withType<Test> {
