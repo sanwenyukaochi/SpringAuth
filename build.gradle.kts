@@ -31,19 +31,19 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
     implementation("org.springframework.boot:spring-boot-starter-flyway")
-    runtimeOnly("org.flywaydb:flyway-database-postgresql:${flywayVersion}")
+    runtimeOnly("org.flywaydb:flyway-database-postgresql:$flywayVersion")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.springframework.boot:spring-boot-starter-cache")
-    implementation("org.redisson:redisson:${redissonVersion}")
-    implementation("me.ahoo.cosid:cosid-spring-boot-starter:${cosidVersion}")
-    implementation("me.ahoo.cosid:cosid-spring-redis:${cosidVersion}")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}")
-    implementation("org.apache.commons:commons-lang3:${commonsLangVersion}")
-    implementation("io.jsonwebtoken:jjwt-api:${jjwtVersion}")
-    runtimeOnly("io.jsonwebtoken:jjwt-impl:${jjwtVersion}")
-    runtimeOnly("io.jsonwebtoken:jjwt-jackson:${jjwtVersion}")
-    runtimeOnly("org.postgresql:postgresql:${postgresqlVersion}")
-    implementation("org.jspecify:jspecify:${jspecifyVersion}")
+    implementation("org.redisson:redisson:$redissonVersion")
+    implementation("me.ahoo.cosid:cosid-spring-boot-starter:$cosidVersion")
+    implementation("me.ahoo.cosid:cosid-spring-redis:$cosidVersion")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springdocVersion")
+    implementation("org.apache.commons:commons-lang3:$commonsLangVersion")
+    implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
+    runtimeOnly("org.postgresql:postgresql:$postgresqlVersion")
+    implementation("org.jspecify:jspecify:$jspecifyVersion")
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
 
@@ -58,40 +58,79 @@ springBoot {
 
 gitProperties {
     failOnNoGitDirectory = false
-    keys = listOf(
-        "git.branch",
-        "git.build.host",
-        "git.build.user.email",
-        "git.build.user.name",
-        "git.build.version",
-        "git.closest.tag.commit.count",
-        "git.closest.tag.name",
-        "git.commit.id",
-        "git.commit.id.abbrev",
-        "git.commit.id.describe",
-        "git.commit.message.full",
-        "git.commit.message.short",
-        "git.commit.time",
-        "git.commit.user.email",
-        "git.commit.user.name",
-        "git.dirty",
-        "git.remote.origin.url",
-        "git.tags",
-        "git.total.commit.count"
-    )
+    keys =
+        listOf(
+            "git.branch",
+            "git.build.host",
+            "git.build.user.email",
+            "git.build.user.name",
+            "git.build.version",
+            "git.closest.tag.commit.count",
+            "git.closest.tag.name",
+            "git.commit.id",
+            "git.commit.id.abbrev",
+            "git.commit.id.describe",
+            "git.commit.message.full",
+            "git.commit.message.short",
+            "git.commit.time",
+            "git.commit.user.email",
+            "git.commit.user.name",
+            "git.dirty",
+            "git.remote.origin.url",
+            "git.tags",
+            "git.total.commit.count",
+        )
 }
 
 spotless {
+    encoding("UTF-8")
     java {
+        target("src/**/*.java")
+        targetExclude("**/build/**", "**/build-*/**")
         palantirJavaFormat("2.89.0")
         importOrder()
         removeUnusedImports()
         formatAnnotations()
         trimTrailingWhitespace()
         endWithNewline()
+        toggleOffOn()
+    }
+
+    kotlin {
+        target("src/**/*.kt")
+        targetExclude("**/build/**")
+        ktlint()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+
+    kotlinGradle {
+        target("*.gradle.kts", "*.gradle")
+        ktlint()
+    }
+
+    format("misc") {
+        target(
+            "**/*.md",
+            "**/*.properties",
+            "**/*.yml",
+            "**/*.yaml",
+            "**/*.xml",
+            "**/*.sh",
+            "**/*.bat",
+            "**/.gitignore",
+        )
+        targetExclude("**/build/**", "**/build-*/**")
+        trimTrailingWhitespace()
+        leadingTabsToSpaces(2)
+        endWithNewline()
     }
 }
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+tasks.named("compileJava") {
+    dependsOn(tasks.named("spotlessCheck"))
 }
