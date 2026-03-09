@@ -11,31 +11,36 @@ import org.springframework.util.Assert;
 
 @Setter
 @Getter
+// 对应 OAuth2AuthenticationToken
 public class GitHubAuthenticationToken extends AbstractAuthenticationToken {
 
-    private String code;
+    private String authorizedClientRegistrationId;
     private UserLoginInfo currentUser;
 
-    public GitHubAuthenticationToken(String code) {
-        this.code = code;
+    public GitHubAuthenticationToken(String authorizedClientRegistrationId) {
+        this.authorizedClientRegistrationId = authorizedClientRegistrationId;
         super(List.of());
         super.setAuthenticated(false);
     }
 
-    public GitHubAuthenticationToken(UserLoginInfo currentUser, Collection<? extends GrantedAuthority> authorities) {
+    public GitHubAuthenticationToken(
+            UserLoginInfo currentUser,
+            Collection<? extends GrantedAuthority> authorities,
+            String authorizedClientRegistrationId) {
         super(authorities);
         this.currentUser = currentUser;
         super.setAuthenticated(true);
+        this.authorizedClientRegistrationId = authorizedClientRegistrationId;
     }
 
     @Override
     public Object getCredentials() {
-        return isAuthenticated() ? null : code;
+        return isAuthenticated() ? null : authorizedClientRegistrationId;
     }
 
     @Override
     public Object getPrincipal() {
-        return isAuthenticated() ? currentUser : code;
+        return isAuthenticated() ? currentUser : authorizedClientRegistrationId;
     }
 
     @Override
@@ -47,6 +52,6 @@ public class GitHubAuthenticationToken extends AbstractAuthenticationToken {
     @Override
     public void eraseCredentials() {
         super.eraseCredentials();
-        this.code = null;
+        this.authorizedClientRegistrationId = null;
     }
 }

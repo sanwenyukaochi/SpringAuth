@@ -51,15 +51,7 @@
 </div>
 <script>
     document.getElementById('github-login').addEventListener('click', function() {
-        fetch('/public/login/github/config')
-            .then(response => response.json())
-            .then(data => {
-                const clientId = data.data.clientId;
-                const redirectUri = data.data.redirectUri;
-                const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent('read:user user:email')}`;
-                window.location.href = authUrl;
-            })
-            .catch(error => console.error('Error:', error));
+        window.location.href = '/api/login/oauth/github';
     });
 </script>
 </body>
