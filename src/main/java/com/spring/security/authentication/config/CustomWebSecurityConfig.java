@@ -5,8 +5,11 @@ import com.spring.security.authentication.handler.auth.LoginSuccessHandler;
 import com.spring.security.authentication.handler.auth.def.DefaultApiAuthenticationFilter;
 import com.spring.security.authentication.handler.auth.email.EmailAuthenticationFilter;
 import com.spring.security.authentication.handler.auth.email.EmailAuthenticationProvider;
-import com.spring.security.authentication.handler.auth.github.GitHubAuthenticationFilter;
-import com.spring.security.authentication.handler.auth.github.GitHubAuthenticationProvider;
+import com.spring.security.authentication.handler.auth.github.GitHubAuthorizationRedirectFilter;
+import com.spring.security.authentication.handler.auth.github.HttpCookieGitHubAuthorizationRequestRepository;
+import com.spring.security.authentication.handler.auth.github.authentication.GitHubAuthorizationCodeAuthenticationProvider;
+import com.spring.security.authentication.handler.auth.github.login.GitHubLoginAuthenticationFilter;
+import com.spring.security.authentication.handler.auth.github.login.GitHubLoginAuthenticationProvider;
 import com.spring.security.authentication.handler.auth.jwt.JwtTokenAuthenticationFilter;
 import com.spring.security.authentication.handler.auth.jwt.JwtTokenAuthenticationProvider;
 import com.spring.security.authentication.handler.auth.jwt.service.JwtService;
@@ -31,6 +34,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
@@ -44,7 +48,8 @@ public class CustomWebSecurityConfig {
     private final CustomAuthenticationExceptionHandler authenticationExceptionHandler;
     private final CustomAuthorizationExceptionHandler authorizationExceptionHandler;
     private final CustomSecurityExceptionHandler globalSpringSecurityExceptionHandler;
-
+    private final ClientRegistrationRepository clientRegistrationRepository;
+    private final HttpCookieGitHubAuthorizationRequestRepository httpCookieGitHubAuthorizationRequestRepository;
     /**
      * 禁用不必要的默认filter，处理异常响应内容
      */
@@ -103,32 +108,43 @@ public class CustomWebSecurityConfig {
             UsernameAuthenticationProvider usernameAuthenticationProvider,
             SmsAuthenticationProvider smsAuthenticationProvider,
             EmailAuthenticationProvider emailAuthenticationProvider,
-            GitHubAuthenticationProvider gitHubAuthenticationProvider) {
+            GitHubAuthorizationCodeAuthenticationProvider gitHubAuthorizationCodeAuthenticationProvider,
+            GitHubLoginAuthenticationProvider gitHubLoginAuthenticationProvider) {
         commonHttpSetting(httpSecurity);
         // 使用securityMatcher限定当前配置作用的路径
         httpSecurity
                 .securityMatcher("/api/login/**")
                 .authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated());
 
-        // 加一个登录方式。用户名、密码登录
+        // 用户名密码认证过滤器
         UsernameAuthenticationFilter usernameAuthenticationFilter = new UsernameAuthenticationFilter(
                 new ProviderManager(List.of(usernameAuthenticationProvider)), loginSuccessHandler, loginFailHandler);
         httpSecurity.addFilterBefore(usernameAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-        // 加一个登录方式。短信验证码 登录
+        // 短信验证码认证过滤器
         SmsAuthenticationFilter smsAuthenticationFilter = new SmsAuthenticationFilter(
                 new ProviderManager(List.of(smsAuthenticationProvider)), loginSuccessHandler, loginFailHandler);
         httpSecurity.addFilterBefore(smsAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-        // 加一个登录方式。邮箱密码 登录
+        // 邮箱密码认证过滤器
         EmailAuthenticationFilter emailAuthenticationFilter = new EmailAuthenticationFilter(
                 new ProviderManager(List.of(emailAuthenticationProvider)), loginSuccessHandler, loginFailHandler);
         httpSecurity.addFilterBefore(emailAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-        // 加一个登录方式。GitHub OAuth2 登录
-        GitHubAuthenticationFilter githubAuthenticationFilter = new GitHubAuthenticationFilter(
-                new ProviderManager(List.of(gitHubAuthenticationProvider)), loginSuccessHandler, loginFailHandler);
-        httpSecurity.addFilterBefore(githubAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        // GitHub OAuth2 授权请求过滤器 - 负责跳转到GitHub登录页
+        GitHubAuthorizationRedirectFilter gitHubAuthorizationRedirectFilter = new GitHubAuthorizationRedirectFilter(
+                clientRegistrationRepository, httpCookieGitHubAuthorizationRequestRepository);
+        httpSecurity.addFilterBefore(gitHubAuthorizationRedirectFilter, UsernamePasswordAuthenticationFilter.class);
+
+        // GitHub OAuth2 回调认证过滤器 - 处理GitHub回调并完成登录
+        GitHubLoginAuthenticationFilter gitHubLoginAuthenticationFilter = new GitHubLoginAuthenticationFilter(
+                clientRegistrationRepository,
+                httpCookieGitHubAuthorizationRequestRepository,
+                new ProviderManager(
+                        List.of(gitHubLoginAuthenticationProvider, gitHubAuthorizationCodeAuthenticationProvider)),
+                loginSuccessHandler,
+                loginFailHandler);
+        httpSecurity.addFilterBefore(gitHubLoginAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return httpSecurity.build();
     }
