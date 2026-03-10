@@ -32,19 +32,21 @@ public class EmailAuthenticationToken extends AbstractAuthenticationToken {
 
     @Override
     public Object getCredentials() {
-        return isAuthenticated() ? null : password;
+        return password;
     }
 
     @Override
     public UserLoginInfo getPrincipal() {
-        return isAuthenticated() ? currentUser : new UserLoginInfo();
+        return currentUser;
     }
 
+    @Override
     public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
         Assert.isTrue(!isAuthenticated, "无法将此令牌设置为受信任令牌 - 请改用接受 GrantedAuthority 列表的构造函数。");
         super.setAuthenticated(false);
     }
 
+    @Override
     public void eraseCredentials() {
         super.eraseCredentials();
         this.password = null;

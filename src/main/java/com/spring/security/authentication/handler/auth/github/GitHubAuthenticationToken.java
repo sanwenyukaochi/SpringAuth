@@ -35,12 +35,12 @@ public class GitHubAuthenticationToken extends AbstractAuthenticationToken {
 
     @Override
     public Object getCredentials() {
-        return isAuthenticated() ? null : authorizedClientRegistrationId;
+        return authorizedClientRegistrationId;
     }
 
     @Override
-    public Object getPrincipal() {
-        return isAuthenticated() ? currentUser : authorizedClientRegistrationId;
+    public UserLoginInfo getPrincipal() {
+        return currentUser;
     }
 
     @Override
