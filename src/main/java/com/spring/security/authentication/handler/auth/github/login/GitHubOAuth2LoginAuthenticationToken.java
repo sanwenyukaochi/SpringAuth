@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
@@ -41,7 +41,7 @@ public class GitHubOAuth2LoginAuthenticationToken extends AbstractAuthentication
             UserLoginInfo currentUser,
             Collection<? extends GrantedAuthority> authorities,
             OAuth2AccessToken accessToken,
-            @Nullable OAuth2RefreshToken refreshToken) {
+            @NonNull OAuth2RefreshToken refreshToken) {
         super(authorities);
         Assert.notNull(clientRegistration, "clientRegistration cannot be null");
         Assert.notNull(authorizationExchange, "authorizationExchange cannot be null");
@@ -57,12 +57,12 @@ public class GitHubOAuth2LoginAuthenticationToken extends AbstractAuthentication
 
     @Override
     public Object getCredentials() {
-        return isAuthenticated() ? null : "code?";
+        return "";
     }
 
     @Override
     public Object getPrincipal() {
-        return isAuthenticated() ? currentUser : "code?";
+        return currentUser;
     }
 
     @Override
@@ -70,10 +70,9 @@ public class GitHubOAuth2LoginAuthenticationToken extends AbstractAuthentication
         Assert.isTrue(!isAuthenticated, "无法将此令牌设置为受信任令牌 - 请改用接受 GrantedAuthority 列表的构造函数。");
         super.setAuthenticated(false);
     }
-    //    ?
-    //    @Override
-    //    public void eraseCredentials() {
-    //        super.eraseCredentials();
-    //        this.code = null;
-    //    }
+
+    @Override
+    public void eraseCredentials() {
+        super.eraseCredentials();
+    }
 }

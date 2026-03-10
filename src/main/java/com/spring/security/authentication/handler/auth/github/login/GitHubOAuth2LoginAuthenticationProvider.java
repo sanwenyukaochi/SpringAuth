@@ -92,7 +92,7 @@ public class GitHubOAuth2LoginAuthenticationProvider implements AuthenticationPr
         User user = retrieveUser(providerUserId, oauth2User, authorizationCodeAuthenticationToken);
         // 验证用户信息
         // 构造成功结果
-        return createSuccessAuthentication(authorizationCodeAuthenticationToken, user, mappedAuthorities);
+        return createSuccessAuthentication(authorizationCodeAuthenticationToken, user, oauth2User, mappedAuthorities);
     }
 
     private Long extractProviderUserId(OAuth2User oauth2User) {
@@ -115,22 +115,26 @@ public class GitHubOAuth2LoginAuthenticationProvider implements AuthenticationPr
     }
 
     protected Authentication createSuccessAuthentication(
-            Authentication authentication, User user, Collection<GrantedAuthority> mappedAuthorities) {
+            Authentication authentication,
+            User user,
+            OAuth2User oauth2User,
+            Collection<GrantedAuthority> mappedAuthorities) {
         GitHubOAuth2AuthorizationCodeAuthenticationToken loginAuthenticationToken =
                 (GitHubOAuth2AuthorizationCodeAuthenticationToken) authentication;
         UserLoginInfo userLoginInfo = new UserLoginInfo(
                 UUID.randomUUID().toString(),
-                user.getId(),
-                user.getUsername(),
-                user.getPassword(),
-                user.getPhone(),
-                user.getEmail(),
-                user.getAccountNonLocked(),
-                user.getAccountNonExpired(),
-                user.getCredentialsNonExpired(),
-                user.getEnabled(),
-                user.getTwoFactorSecret(),
-                user.getTwoFactorEnabled());
+                user != null ? user.getId() : null,
+                user != null ? user.getUsername() : oauth2User.getAttribute("login"),
+                user != null ? user.getPassword() : null,
+                user != null ? user.getPhone() : null,
+                user != null ? user.getEmail() : oauth2User.getAttribute("email"),
+                user != null ? user.getAccountNonLocked() : null,
+                user != null ? user.getAccountNonExpired() : null,
+                user != null ? user.getCredentialsNonExpired() : null,
+                user != null ? user.getEnabled() : null,
+                user != null ? user.getTwoFactorSecret() : null,
+                user != null ? user.getTwoFactorEnabled() : null);
+
         // 认证通过，使用 Authenticated 为 true 的构造函数
         GitHubOAuth2LoginAuthenticationToken result = new GitHubOAuth2LoginAuthenticationToken(
                 loginAuthenticationToken.getClientRegistration(),
@@ -163,6 +167,15 @@ public class GitHubOAuth2LoginAuthenticationProvider implements AuthenticationPr
                             Boolean.FALSE));
                     return user;
                 })
-                .orElse(null);
+                .orElseGet(() -> {
+                    authentication.setDetails(new GitHubOAuth2Meta(
+                            UserIdentity.Provider.GITHUB,
+                            providerUserId,
+                            oauth2User.getAttribute("login"),
+                            oauth2User.getAttribute("name"),
+                            oauth2User.getAttribute("email"),
+                            Boolean.TRUE));
+                    return null;
+                });
     }
 }
