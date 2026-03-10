@@ -34,7 +34,7 @@ public class GitHubOAuth2AuthorizationCodeAuthenticationProvider implements Auth
     }
 
     @Override
-    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+    public Authentication authenticate(@NonNull Authentication authentication) throws AuthenticationException {
         GitHubOAuth2AuthorizationCodeAuthenticationToken authorizationCodeAuthentication =
                 (GitHubOAuth2AuthorizationCodeAuthenticationToken) authentication;
         OAuth2AuthorizationResponse authorizationResponse =
