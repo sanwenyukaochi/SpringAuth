@@ -57,12 +57,6 @@ public class HttpCookieGitHubAuthorizationRequestRepository
         return authorizationRequest;
     }
 
-    /**
-     * Gets the state parameter from the {@link HttpServletRequest}
-     *
-     * @param request the request to use
-     * @return the state parameter or null if not found
-     */
     private String getStateParameter(HttpServletRequest request) {
         return request.getParameter(OAuth2ParameterNames.STATE);
     }
