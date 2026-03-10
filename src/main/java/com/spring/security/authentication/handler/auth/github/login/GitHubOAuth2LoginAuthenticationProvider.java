@@ -3,45 +3,41 @@ package com.spring.security.authentication.handler.auth.github.login;
 import com.spring.security.authentication.handler.auth.UserLoginInfo;
 import com.spring.security.authentication.handler.auth.github.authentication.GitHubOAuth2AuthorizationCodeAuthenticationProvider;
 import com.spring.security.authentication.handler.auth.github.authentication.GitHubOAuth2AuthorizationCodeAuthenticationToken;
+import com.spring.security.authentication.handler.auth.github.dto.GitHubOAuth2Meta;
 import com.spring.security.authentication.handler.auth.github.service.GitHubOAuth2UserService;
 import com.spring.security.domain.model.entity.User;
 import com.spring.security.domain.model.entity.UserIdentity;
 import com.spring.security.domain.repository.UserIdentityRepository;
 import com.spring.security.domain.repository.UserRepository;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.FactorGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
-import org.springframework.security.oauth2.core.OAuth2AccessToken;
-import org.springframework.security.oauth2.core.OAuth2RefreshToken;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.*;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
+import tools.jackson.databind.json.JsonMapper;
 
+@Slf4j
 @Setter
 @Getter
 @Component
 public class GitHubOAuth2LoginAuthenticationProvider implements AuthenticationProvider {
-
+    private static final String AUTHORITY = FactorGrantedAuthority.AUTHORIZATION_CODE_AUTHORITY;
     private final GitHubOAuth2AuthorizationCodeAuthenticationProvider authorizationCodeAuthenticationProvider;
-
-    private final GitHubOAuth2UserService gitHubOAuth2UserService;
-
+    private final OAuth2UserService<OAuth2UserRequest, OAuth2User> gitHubOAuth2UserService;
     private final UserIdentityRepository userIdentityRepository;
-
     private final UserRepository userRepository;
-
     private GrantedAuthoritiesMapper authoritiesMapper = (authorities) -> authorities;
 
     public GitHubOAuth2LoginAuthenticationProvider(
@@ -61,57 +57,42 @@ public class GitHubOAuth2LoginAuthenticationProvider implements AuthenticationPr
     }
 
     @Override
-    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+    public Authentication authenticate(@NonNull Authentication authentication) throws AuthenticationException {
         GitHubOAuth2LoginAuthenticationToken loginAuthenticationToken =
                 (GitHubOAuth2LoginAuthenticationToken) authentication;
-
-        GitHubOAuth2AuthorizationCodeAuthenticationToken authorizationCodeAuthenticationToken =
-                new GitHubOAuth2AuthorizationCodeAuthenticationToken(
-                        loginAuthenticationToken.getClientRegistration(),
-                        loginAuthenticationToken.getAuthorizationExchange());
-        authorizationCodeAuthenticationToken.setDetails(loginAuthenticationToken.getDetails());
-
-        GitHubOAuth2AuthorizationCodeAuthenticationToken authorizationCodeAuthenticationResult =
-                (GitHubOAuth2AuthorizationCodeAuthenticationToken)
-                        this.authorizationCodeAuthenticationProvider.authenticate(authorizationCodeAuthenticationToken);
-
-        OAuth2AccessToken accessToken = authorizationCodeAuthenticationResult.getAccessToken();
-        OAuth2RefreshToken refreshToken = authorizationCodeAuthenticationResult.getRefreshToken();
-        Map<String, Object> additionalParameters = authorizationCodeAuthenticationResult.getAdditionalParameters();
-
-        // 2. 再用 access_token 拉取 GitHub 用户信息
+        if (loginAuthenticationToken
+                .getAuthorizationExchange()
+                .getAuthorizationRequest()
+                .getScopes()
+                .contains("openid")) {
+            return null;
+        }
+        GitHubOAuth2AuthorizationCodeAuthenticationToken authorizationCodeAuthenticationToken;
+        try {
+            authorizationCodeAuthenticationToken = (GitHubOAuth2AuthorizationCodeAuthenticationToken)
+                    this.authorizationCodeAuthenticationProvider.authenticate(
+                            new GitHubOAuth2AuthorizationCodeAuthenticationToken(
+                                    loginAuthenticationToken.getClientRegistration(),
+                                    loginAuthenticationToken.getAuthorizationExchange()));
+        } catch (OAuth2AuthorizationException ex) {
+            OAuth2Error oauth2Error = ex.getError();
+            throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString(), ex);
+        }
+        OAuth2AccessToken accessToken = authorizationCodeAuthenticationToken.getAccessToken();
+        Map<String, Object> additionalParameters = authorizationCodeAuthenticationToken.getAdditionalParameters();
         OAuth2User oauth2User = this.gitHubOAuth2UserService.loadUser(new OAuth2UserRequest(
                 loginAuthenticationToken.getClientRegistration(), accessToken, additionalParameters));
-
         Collection<GrantedAuthority> authorities = new HashSet<>(oauth2User.getAuthorities());
         Collection<GrantedAuthority> mappedAuthorities =
                 new LinkedHashSet<>(this.authoritiesMapper.mapAuthorities(authorities));
+        mappedAuthorities.add(FactorGrantedAuthority.fromAuthority(AUTHORITY));
         Long providerUserId = extractProviderUserId(oauth2User);
-        Optional<UserIdentity> userIdentity =
-                userIdentityRepository.findByProviderUserIdAndProvider(providerUserId, UserIdentity.Provider.GITHUB);
-        UserLoginInfo currentUser = userIdentity
-                .map(UserIdentity::getUserId)
-                .flatMap(userRepository::findById)
-                .map(this::toUserLoginInfo)
-                .orElseGet(() -> buildUnboundGitHubUser(oauth2User, providerUserId));
 
-        Map<String, Object> additionalInfo = new HashMap<>();
-        additionalInfo.put("provider", "github");
-        additionalInfo.put("providerUserId", providerUserId);
-        additionalInfo.put("login", oauth2User.getAttribute("login"));
-        additionalInfo.put("name", oauth2User.getAttribute("name"));
-        additionalInfo.put("email", oauth2User.getAttribute("email"));
-        additionalInfo.put("isNewUser", userIdentity.isEmpty());
-
-        GitHubOAuth2LoginAuthenticationToken authenticationResult = new GitHubOAuth2LoginAuthenticationToken(
-                loginAuthenticationToken.getClientRegistration(),
-                loginAuthenticationToken.getAuthorizationExchange(),
-                currentUser,
-                mappedAuthorities,
-                accessToken,
-                refreshToken);
-        authenticationResult.setDetails(additionalInfo);
-        return authenticationResult;
+        // 查询用户信息
+        User user = retrieveUser(providerUserId, oauth2User, authorizationCodeAuthenticationToken);
+        // 验证用户信息
+        // 构造成功结果
+        return createSuccessAuthentication(authorizationCodeAuthenticationToken, user, mappedAuthorities);
     }
 
     private Long extractProviderUserId(OAuth2User oauth2User) {
@@ -123,8 +104,21 @@ public class GitHubOAuth2LoginAuthenticationProvider implements AuthenticationPr
         return Long.parseLong(String.valueOf(id));
     }
 
-    private UserLoginInfo toUserLoginInfo(User user) {
-        return new UserLoginInfo(
+    public final void setAuthoritiesMapper(GrantedAuthoritiesMapper authoritiesMapper) {
+        Assert.notNull(authoritiesMapper, "authoritiesMapper cannot be null");
+        this.authoritiesMapper = authoritiesMapper;
+    }
+
+    @Override
+    public boolean supports(@NonNull Class<?> authentication) {
+        return GitHubOAuth2LoginAuthenticationToken.class.isAssignableFrom(authentication);
+    }
+
+    protected Authentication createSuccessAuthentication(
+            Authentication authentication, User user, Collection<GrantedAuthority> mappedAuthorities) {
+        GitHubOAuth2AuthorizationCodeAuthenticationToken loginAuthenticationToken =
+                (GitHubOAuth2AuthorizationCodeAuthenticationToken) authentication;
+        UserLoginInfo userLoginInfo = new UserLoginInfo(
                 UUID.randomUUID().toString(),
                 user.getId(),
                 user.getUsername(),
@@ -137,34 +131,38 @@ public class GitHubOAuth2LoginAuthenticationProvider implements AuthenticationPr
                 user.getEnabled(),
                 user.getTwoFactorSecret(),
                 user.getTwoFactorEnabled());
+        // 认证通过，使用 Authenticated 为 true 的构造函数
+        GitHubOAuth2LoginAuthenticationToken result = new GitHubOAuth2LoginAuthenticationToken(
+                loginAuthenticationToken.getClientRegistration(),
+                loginAuthenticationToken.getAuthorizationExchange(),
+                userLoginInfo,
+                mappedAuthorities,
+                loginAuthenticationToken.getAccessToken(),
+                loginAuthenticationToken.getRefreshToken());
+        // 必须转化成Map
+        result.setDetails(JsonMapper.shared().convertValue(authentication.getDetails(), Map.class));
+        log.debug("用户名认证成功，用户: {}", userLoginInfo.getUsername());
+        return result;
     }
 
-    private UserLoginInfo buildUnboundGitHubUser(OAuth2User oauth2User, Long providerUserId) {
-        String username = Optional.ofNullable(oauth2User.<String>getAttribute("login"))
-                .filter(login -> !login.isBlank())
-                .orElse("github_" + providerUserId);
-        return new UserLoginInfo(
-                UUID.randomUUID().toString(),
-                null,
-                username,
-                null,
-                null,
-                oauth2User.getAttribute("email"),
-                true,
-                true,
-                true,
-                true,
-                null,
-                false);
-    }
-
-    public final void setAuthoritiesMapper(GrantedAuthoritiesMapper authoritiesMapper) {
-        Assert.notNull(authoritiesMapper, "authoritiesMapper cannot be null");
-        this.authoritiesMapper = authoritiesMapper;
-    }
-
-    @Override
-    public boolean supports(Class<?> authentication) {
-        return GitHubOAuth2LoginAuthenticationToken.class.isAssignableFrom(authentication);
+    protected User retrieveUser(
+            Long providerUserId, OAuth2User oauth2User, GitHubOAuth2AuthorizationCodeAuthenticationToken authentication)
+            throws AuthenticationException {
+        log.debug("查询GitHub用户: providerUserId={}", providerUserId);
+        return userIdentityRepository
+                .findByProviderUserIdAndProvider(providerUserId, UserIdentity.Provider.GITHUB)
+                .map(UserIdentity::getUserId)
+                .flatMap(userRepository::findById)
+                .map(user -> {
+                    authentication.setDetails(new GitHubOAuth2Meta(
+                            UserIdentity.Provider.GITHUB,
+                            providerUserId,
+                            oauth2User.getAttribute("login"),
+                            oauth2User.getAttribute("name"),
+                            oauth2User.getAttribute("email"),
+                            Boolean.FALSE));
+                    return user;
+                })
+                .orElse(null);
     }
 }

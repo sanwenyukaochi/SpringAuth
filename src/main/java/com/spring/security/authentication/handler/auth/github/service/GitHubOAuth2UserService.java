@@ -44,7 +44,7 @@ public class GitHubOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             new OAuth2UserRequestEntityConverter();
 
     private Converter<OAuth2UserRequest, Converter<Map<String, Object>, Map<String, Object>>> attributesConverter =
-            (request) -> (attributes) -> attributes;
+            (_) -> (attributes) -> attributes;
 
     private RestOperations restOperations;
 
