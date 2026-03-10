@@ -2,7 +2,7 @@ plugins {
     java
     id("org.springframework.boot") version "4.0.3"
     id("io.spring.dependency-management") version "1.1.7"
-    id("com.gorylenko.gradle-git-properties") version "2.5.4"
+    id("com.gorylenko.gradle-git-properties") version "2.5.7"
     id("com.diffplug.spotless") version "8.3.0"
 }
 group = "com.spring.security"
@@ -14,7 +14,7 @@ val commonsLangVersion by extra("3.20.0")
 val jjwtVersion by extra("0.13.0")
 val postgresqlVersion by extra("42.7.10")
 val jspecifyVersion by extra("1.0.0")
-val flywayVersion by extra("12.0.3")
+val flywayVersion by extra("12.1.0")
 val redissonVersion by extra("4.3.0")
 
 dependencies {
