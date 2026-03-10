@@ -6,10 +6,10 @@ import com.spring.security.authentication.handler.auth.def.DefaultApiAuthenticat
 import com.spring.security.authentication.handler.auth.email.EmailAuthenticationFilter;
 import com.spring.security.authentication.handler.auth.email.EmailAuthenticationProvider;
 import com.spring.security.authentication.handler.auth.github.GitHubOAuth2AuthorizationRedirectFilter;
-import com.spring.security.authentication.handler.auth.github.repository.GitHubHttpSessionOAuth2AuthorizationRequestRepository;
 import com.spring.security.authentication.handler.auth.github.authentication.GitHubOAuth2AuthorizationCodeAuthenticationProvider;
 import com.spring.security.authentication.handler.auth.github.login.GitHubOAuth2LoginAuthenticationFilter;
 import com.spring.security.authentication.handler.auth.github.login.GitHubOAuth2LoginAuthenticationProvider;
+import com.spring.security.authentication.handler.auth.github.repository.GitHubHttpSessionOAuth2AuthorizationRequestRepository;
 import com.spring.security.authentication.handler.auth.jwt.JwtTokenAuthenticationFilter;
 import com.spring.security.authentication.handler.auth.jwt.JwtTokenAuthenticationProvider;
 import com.spring.security.authentication.handler.auth.jwt.service.JwtService;
@@ -48,7 +48,8 @@ public class CustomWebSecurityConfig {
     private final CustomAuthorizationExceptionHandler authorizationExceptionHandler;
     private final CustomSecurityExceptionHandler globalSpringSecurityExceptionHandler;
     private final ClientRegistrationRepository clientRegistrationRepository;
-    private final GitHubHttpSessionOAuth2AuthorizationRequestRepository gitHubHttpSessionOAuth2AuthorizationRequestRepository;
+    private final GitHubHttpSessionOAuth2AuthorizationRequestRepository
+            gitHubHttpSessionOAuth2AuthorizationRequestRepository;
     /**
      * 禁用不必要的默认filter，处理异常响应内容
      */
@@ -131,18 +132,22 @@ public class CustomWebSecurityConfig {
         httpSecurity.addFilterBefore(emailAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         // GitHub OAuth2 授权请求过滤器 - 负责跳转到GitHub登录页
-        GitHubOAuth2AuthorizationRedirectFilter gitHubOAuth2AuthorizationRedirectFilter = new GitHubOAuth2AuthorizationRedirectFilter(
-                clientRegistrationRepository, gitHubHttpSessionOAuth2AuthorizationRequestRepository);
-        httpSecurity.addFilterBefore(gitHubOAuth2AuthorizationRedirectFilter, UsernamePasswordAuthenticationFilter.class);
+        GitHubOAuth2AuthorizationRedirectFilter gitHubOAuth2AuthorizationRedirectFilter =
+                new GitHubOAuth2AuthorizationRedirectFilter(
+                        clientRegistrationRepository, gitHubHttpSessionOAuth2AuthorizationRequestRepository);
+        httpSecurity.addFilterBefore(
+                gitHubOAuth2AuthorizationRedirectFilter, UsernamePasswordAuthenticationFilter.class);
 
         // GitHub OAuth2 回调认证过滤器 - 处理GitHub回调并完成登录
-        GitHubOAuth2LoginAuthenticationFilter gitHubOAuth2LoginAuthenticationFilter = new GitHubOAuth2LoginAuthenticationFilter(
-                clientRegistrationRepository,
-                gitHubHttpSessionOAuth2AuthorizationRequestRepository,
-                new ProviderManager(
-                        List.of(gitHubOAuth2LoginAuthenticationProvider, gitHubOAuth2AuthorizationCodeAuthenticationProvider)),
-                loginSuccessHandler,
-                loginFailHandler);
+        GitHubOAuth2LoginAuthenticationFilter gitHubOAuth2LoginAuthenticationFilter =
+                new GitHubOAuth2LoginAuthenticationFilter(
+                        clientRegistrationRepository,
+                        gitHubHttpSessionOAuth2AuthorizationRequestRepository,
+                        new ProviderManager(List.of(
+                                gitHubOAuth2LoginAuthenticationProvider,
+                                gitHubOAuth2AuthorizationCodeAuthenticationProvider)),
+                        loginSuccessHandler,
+                        loginFailHandler);
         httpSecurity.addFilterBefore(gitHubOAuth2LoginAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return httpSecurity.build();

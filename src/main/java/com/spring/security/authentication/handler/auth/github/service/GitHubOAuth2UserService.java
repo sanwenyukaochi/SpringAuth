@@ -1,19 +1,3 @@
-/*
- * Copyright 2004-present the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.spring.security.authentication.handler.auth.github.service;
 
 import java.util.Collection;
@@ -39,7 +23,6 @@ import org.springframework.security.oauth2.core.user.OAuth2UserAuthority;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
@@ -178,31 +161,11 @@ public class GitHubOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         return authorities;
     }
 
-    /**
-     * Sets the {@link Converter} used for converting the {@link OAuth2UserRequest} to a
-     * {@link RequestEntity} representation of the UserInfo Request.
-     * @param requestEntityConverter the {@link Converter} used for converting to a
-     * {@link RequestEntity} representation of the UserInfo Request
-     * @since 5.1
-     */
     public final void setRequestEntityConverter(Converter<OAuth2UserRequest, RequestEntity<?>> requestEntityConverter) {
         Assert.notNull(requestEntityConverter, "requestEntityConverter cannot be null");
         this.requestEntityConverter = requestEntityConverter;
     }
 
-    /**
-     * Sets the {@link RestOperations} used when requesting the UserInfo resource.
-     *
-     * <p>
-     * <b>NOTE:</b> At a minimum, the supplied {@code restOperations} must be configured
-     * with the following:
-     * <ol>
-     * <li>{@link ResponseErrorHandler} - {@link OAuth2ErrorResponseErrorHandler}</li>
-     * </ol>
-     * @param restOperations the {@link RestOperations} used when requesting the UserInfo
-     * resource
-     * @since 5.1
-     */
     public final void setRestOperations(RestOperations restOperations) {
         Assert.notNull(restOperations, "restOperations cannot be null");
         this.restOperations = restOperations;
