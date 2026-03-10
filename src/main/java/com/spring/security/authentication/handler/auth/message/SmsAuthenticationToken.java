@@ -36,8 +36,8 @@ public class SmsAuthenticationToken extends AbstractAuthenticationToken {
     }
 
     @Override
-    public Object getPrincipal() {
-        return isAuthenticated() ? currentUser : phone;
+    public UserLoginInfo getPrincipal() {
+        return isAuthenticated() ? currentUser : new UserLoginInfo();
     }
 
     public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {

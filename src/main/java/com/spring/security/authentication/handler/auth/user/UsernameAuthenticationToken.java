@@ -44,9 +44,9 @@ public class UsernameAuthenticationToken extends AbstractAuthenticationToken {
     }
 
     @Override
-    public Object getPrincipal() {
+    public UserLoginInfo getPrincipal() {
         // 根据SpringSecurity的设计，授权成功之前，getPrincipal返回的客户端传过来的数据。授权成功后，返回当前登陆用户的信息
-        return isAuthenticated() ? currentUser : username;
+        return isAuthenticated() ? currentUser : new UserLoginInfo();
     }
 
     public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {

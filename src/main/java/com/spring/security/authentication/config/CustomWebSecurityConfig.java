@@ -15,7 +15,6 @@ import com.spring.security.authentication.handler.auth.jwt.JwtTokenAuthenticatio
 import com.spring.security.authentication.handler.auth.jwt.service.JwtService;
 import com.spring.security.authentication.handler.auth.message.SmsAuthenticationFilter;
 import com.spring.security.authentication.handler.auth.message.SmsAuthenticationProvider;
-import com.spring.security.authentication.handler.auth.openApi.OpenApiAuthenticationFilter;
 import com.spring.security.authentication.handler.auth.user.UsernameAuthenticationFilter;
 import com.spring.security.authentication.handler.auth.user.UsernameAuthenticationProvider;
 import com.spring.security.authentication.handler.exception.CustomAuthenticationExceptionHandler;
@@ -161,9 +160,9 @@ public class CustomWebSecurityConfig {
                 .securityMatcher("/api/open-api/**")
                 .authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated());
 
-        OpenApiAuthenticationFilter openApiFilter = new OpenApiAuthenticationFilter();
+        //        OpenApiAuthenticationFilter openApiFilter = new OpenApiAuthenticationFilter();
         // 加一个登录方式。用户名、密码登录
-        httpSecurity.addFilterBefore(openApiFilter, UsernamePasswordAuthenticationFilter.class);
+        //        httpSecurity.addFilterBefore(openApiFilter, UsernamePasswordAuthenticationFilter.class);
         return httpSecurity.build();
     }
 

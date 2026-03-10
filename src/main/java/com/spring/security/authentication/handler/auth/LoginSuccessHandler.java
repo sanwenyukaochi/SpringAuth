@@ -50,34 +50,36 @@ public class LoginSuccessHandler extends AbstractAuthenticationTargetUrlRequestH
             @NonNull HttpServletResponse response,
             @NonNull Authentication authentication)
             throws IOException {
-        @SuppressWarnings("unchecked")
-        Map<String, Object> additionalInfo = Optional.ofNullable(authentication.getDetails())
-                .filter(Map.class::isInstance)
-                .map(Map.class::cast)
-                .orElse(Map.of());
-
         UserLoginInfo currentUser = Optional.of(authentication)
                 .map(Authentication::getPrincipal)
                 .filter(UserLoginInfo.class::isInstance)
                 .map(UserLoginInfo.class::cast)
                 .orElseThrow(() -> new BaseException(BaseCode.AUTHENTICATION_TYPE_ERROR));
-        boolean isNewUser = Boolean.TRUE.equals(additionalInfo.get("isNewUser"));
-        String token = null;
-        String refreshToken = null;
-        if (!isNewUser) {
-            JwtTokenUserLoginInfo jwtTokenUserLoginInfo =
-                    new JwtTokenUserLoginInfo(currentUser.getSessionId(), currentUser.getUsername());
-            // 生成token和refreshToken
-            token = jwtService.generateTokenFromUsername(
-                    currentUser.getUsername(), jwtTokenUserLoginInfo, JWTConstants.TOKEN_EXPIRED_TIME);
-            refreshToken = jwtService.generateTokenFromUsername(
-                    currentUser.getUsername(), jwtTokenUserLoginInfo, JWTConstants.REFRESH_TOKEN_EXPIRED_TIME);
+        JwtTokenUserLoginInfo jwtTokenUserLoginInfo =
+                new JwtTokenUserLoginInfo(currentUser.getSessionId(), currentUser.getUsername());
+        // 一些特殊的登录参数。比如三方登录，需要额外返回一个字段是否需要跳转的绑定已有账号页面
+        @SuppressWarnings("unchecked")
+        Map<String, Object> additionalInfo = Optional.ofNullable(authentication.getDetails())
+                .filter(Map.class::isInstance)
+                .map(Map.class::cast)
+                .orElse(Map.of());
+        boolean hasAccount =
+                authentication.getDetails() == null || Boolean.FALSE.equals(additionalInfo.get("isNewUser"));
+        // 生成token和refreshToken
+        String token = hasAccount
+                ? jwtService.generateTokenFromUsername(
+                        currentUser.getUsername(), jwtTokenUserLoginInfo, JWTConstants.TOKEN_EXPIRED_TIME)
+                : null;
+        String refreshToken = hasAccount
+                ? jwtService.generateTokenFromUsername(
+                        currentUser.getUsername(), jwtTokenUserLoginInfo, JWTConstants.REFRESH_TOKEN_EXPIRED_TIME)
+                : null;
+        if (hasAccount)
             redissonClient
                     .getBucket(
                             RedisCache.USER_INFO.formatted(jwtTokenUserLoginInfo.username()),
                             new TypedJsonJacksonCodec(UserLoginInfo.class))
                     .set(currentUser);
-        }
 
         LoginResponse loginResponse = new LoginResponse(token, refreshToken, additionalInfo);
         // UTF_8编码 APPLICATION_JSON_VALUE防止出现乱码

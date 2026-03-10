@@ -36,8 +36,8 @@ public class EmailAuthenticationToken extends AbstractAuthenticationToken {
     }
 
     @Override
-    public Object getPrincipal() {
-        return isAuthenticated() ? currentUser : email;
+    public UserLoginInfo getPrincipal() {
+        return isAuthenticated() ? currentUser : new UserLoginInfo();
     }
 
     public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
