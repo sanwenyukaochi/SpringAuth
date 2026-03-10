@@ -1,4 +1,4 @@
-package com.spring.security.authentication.handler.auth.github.config;
+package com.spring.security.authentication.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,15 +11,15 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 @Configuration
-public class GitHubOAuth2Config {
+public class CustomOAuth2Config {
 
     @Bean
-    public OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> githubAccessTokenResponseClient() {
+    public OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> oAuth2AccessTokenResponseClient() {
         return new RestClientAuthorizationCodeTokenResponseClient();
     }
 
     @Bean
-    public OAuth2UserService<OAuth2UserRequest, OAuth2User> githubOAuth2UserService() {
+    public OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService() {
         return new DefaultOAuth2UserService();
     }
 }
