@@ -62,7 +62,8 @@ public class GitHubOAuth2LoginAuthenticationProvider implements AuthenticationPr
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        GitHubOAuth2LoginAuthenticationToken loginAuthenticationToken = (GitHubOAuth2LoginAuthenticationToken) authentication;
+        GitHubOAuth2LoginAuthenticationToken loginAuthenticationToken =
+                (GitHubOAuth2LoginAuthenticationToken) authentication;
 
         GitHubOAuth2AuthorizationCodeAuthenticationToken authorizationCodeAuthenticationToken =
                 new GitHubOAuth2AuthorizationCodeAuthenticationToken(

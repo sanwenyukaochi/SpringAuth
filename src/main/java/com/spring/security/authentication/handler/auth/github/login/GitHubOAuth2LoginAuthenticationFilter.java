@@ -40,8 +40,8 @@ public class GitHubOAuth2LoginAuthenticationFilter extends AbstractAuthenticatio
     private final ClientRegistrationRepository clientRegistrationRepository;
 
     private AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository;
-    private Function<GitHubOAuth2LoginAuthenticationToken, GitHubOAuth2AuthenticationToken> authenticationResultConverter =
-            this::createAuthenticationResult;
+    private Function<GitHubOAuth2LoginAuthenticationToken, GitHubOAuth2AuthenticationToken>
+            authenticationResultConverter = this::createAuthenticationResult;
 
     public GitHubOAuth2LoginAuthenticationFilter(
             ClientRegistrationRepository clientRegistrationRepository,
@@ -102,8 +102,8 @@ public class GitHubOAuth2LoginAuthenticationFilter extends AbstractAuthenticatio
 
         log.debug("GitHub callback 认证开始, registrationId={}", registrationId);
 
-        GitHubOAuth2LoginAuthenticationToken authenticationResult =
-                (GitHubOAuth2LoginAuthenticationToken) this.getAuthenticationManager().authenticate(authenticationRequest);
+        GitHubOAuth2LoginAuthenticationToken authenticationResult = (GitHubOAuth2LoginAuthenticationToken)
+                this.getAuthenticationManager().authenticate(authenticationRequest);
         GitHubOAuth2AuthenticationToken gitHubOAuth2AuthenticationToken =
                 this.authenticationResultConverter.apply(authenticationResult);
         gitHubOAuth2AuthenticationToken.setDetails(authenticationResult.getDetails());
@@ -117,12 +117,14 @@ public class GitHubOAuth2LoginAuthenticationFilter extends AbstractAuthenticatio
     }
 
     public final void setAuthenticationResultConverter(
-            Function<GitHubOAuth2LoginAuthenticationToken, GitHubOAuth2AuthenticationToken> authenticationResultConverter) {
+            Function<GitHubOAuth2LoginAuthenticationToken, GitHubOAuth2AuthenticationToken>
+                    authenticationResultConverter) {
         Assert.notNull(authenticationResultConverter, "authenticationResultConverter cannot be null");
         this.authenticationResultConverter = authenticationResultConverter;
     }
 
-    private GitHubOAuth2AuthenticationToken createAuthenticationResult(GitHubOAuth2LoginAuthenticationToken authenticationResult) {
+    private GitHubOAuth2AuthenticationToken createAuthenticationResult(
+            GitHubOAuth2LoginAuthenticationToken authenticationResult) {
         return new GitHubOAuth2AuthenticationToken(
                 authenticationResult.getCurrentUser(),
                 authenticationResult.getAuthorities(),
