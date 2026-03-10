@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub Callback</title>
+  <style>
+    :root {
+      --bg: linear-gradient(180deg, #101828 0%, #1d2939 100%);
+      --card: rgba(255, 255, 255, 0.08);
+      --text: #f8fafc;
+      --muted: #cbd5e1;
+      --error: #fecaca;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "SF Pro Display", "PingFang SC", "Helvetica Neue", sans-serif;
+    }
+
+    .card {
+      width: min(520px, 100%);
+      padding: 32px;
+      border-radius: 24px;
+      background: var(--card);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 28px;
+      letter-spacing: -0.03em;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h1 id="title">GitHub 回调处理中</h1>
+  <p id="message">正在将授权结果发送给后端，请稍候。</p>
+</div>
+<script>
+  const titleNode = document.getElementById('title');
+  const messageNode = document.getElementById('message');
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  const state = params.get('state');
+
+  function updateView(title, message) {
+    titleNode.textContent = title;
+    messageNode.textContent = message;
+  }
+
+  function notifyOpener(type, payload) {
+    if (!window.opener) {
+      return;
+    }
+    window.opener.postMessage({ type, ...payload }, window.location.origin);
+  }
+
+  async function handleCallback() {
+    if (!code || !state) {
+      const message = '回调参数缺失，必须同时包含 code 和 state。';
+      updateView('GitHub 回调失败', message);
+      notifyOpener('OAUTH_LOGIN_ERROR', { message });
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/login/oauth2/github/callback${window.location.search}`, {
+        method: 'GET',
+        credentials: 'include'
+      });
+      const result = await response.json();
+
+      if (!response.ok) {
+        const message = result.message || '后端处理 GitHub 回调失败。';
+        updateView('GitHub 登录失败', message);
+        notifyOpener('OAUTH_LOGIN_ERROR', { message, result });
+        return;
+      }
+
+      const loginData = result.data || {};
+      updateView('GitHub 登录成功', '登录结果已通过 postMessage 回传给主页面，弹窗即将关闭。');
+      notifyOpener('OAUTH_LOGIN_SUCCESS', {
+        token: loginData.token || null,
+        refreshToken: loginData.refreshToken || null,
+        additionalInfo: loginData.additionalInfo || {}
+      });
+
+      setTimeout(() => window.close(), 300);
+    } catch (error) {
+      const message = `请求后端回调接口失败: ${error.message}`;
+      updateView('GitHub 登录失败', message);
+      notifyOpener('OAUTH_LOGIN_ERROR', { message });
+    }
+  }
+
+  handleCallback();
+</script>
+</body>
+</html>
