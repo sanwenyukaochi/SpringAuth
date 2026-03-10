@@ -1,7 +1,7 @@
 package com.spring.security.authentication.handler.auth.github.login;
 
 import com.spring.security.authentication.handler.auth.github.GitHubOAuth2AuthenticationToken;
-import com.spring.security.authentication.handler.auth.utils.OAuth2AuthorizationResponseUtils;
+import com.spring.security.authentication.utils.OAuth2AuthorizationResponseUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.function.Function;

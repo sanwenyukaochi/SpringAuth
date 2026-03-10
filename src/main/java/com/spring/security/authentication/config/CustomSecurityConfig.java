@@ -42,7 +42,7 @@ import org.springframework.security.web.savedrequest.NullRequestCache;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-public class CustomWebSecurityConfig {
+public class CustomSecurityConfig {
 
     private final CustomAuthenticationExceptionHandler authenticationExceptionHandler;
     private final CustomAuthorizationExceptionHandler authorizationExceptionHandler;

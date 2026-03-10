@@ -1,4 +1,4 @@
-package com.spring.security.authentication.handler.auth.utils;
+package com.spring.security.authentication.utils;
 
 import java.util.Map;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationResponse;
