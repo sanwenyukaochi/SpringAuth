@@ -4,6 +4,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
     id("com.gorylenko.gradle-git-properties") version "2.5.7"
     id("com.diffplug.spotless") version "8.3.0"
+    id("checkstyle")
 }
 group = "com.spring.security"
 version = "0.0.1-SNAPSHOT"
@@ -117,4 +118,22 @@ tasks.withType<Test> {
 
 tasks.named("compileJava") {
     dependsOn(tasks.named("spotlessCheck"))
+}
+
+checkstyle {
+    toolVersion = "10.14.2"
+    configFile = file("config/checkstyle/checkstyle.xml")
+    configProperties =
+        mapOf(
+            "baseDir" to rootDir,
+        )
+    isIgnoreFailures = true // 注意：Groovy中是 ignoreFailures，Kotlin中需要 isIgnoreFailures
+}
+
+tasks.withType<Checkstyle>().configureEach {
+    val checkstyleConfigFile = file("config/checkstyle/checkstyle.xml")
+    enabled = checkstyleConfigFile.exists()
+    if (!enabled) {
+        logger.warn("Checkstyle config file not found at {}, skipping checkstyle tasks", checkstyleConfigFile.absolutePath)
+    }
 }
