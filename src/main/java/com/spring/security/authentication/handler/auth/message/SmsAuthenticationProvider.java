@@ -70,7 +70,7 @@ public class SmsAuthenticationProvider implements AuthenticationProvider {
                 user.getTwoFactorSecret(),
                 user.getTwoFactorEnabled());
         // 认证通过，使用 Authenticated 为 true 的构造函数
-        SmsAuthenticationToken result = new SmsAuthenticationToken(userLoginInfo, List.of());
+        SmsAuthenticationToken result = SmsAuthenticationToken.authenticated(userLoginInfo, List.of());
         // 必须转化成Map
         result.setDetails(jsonMapper.convertValue(authentication.getDetails(), Map.class));
         log.debug("手机号认证成功，用户: {}", userLoginInfo.getUsername());

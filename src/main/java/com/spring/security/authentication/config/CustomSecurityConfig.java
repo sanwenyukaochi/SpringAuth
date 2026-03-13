@@ -222,7 +222,7 @@ public class CustomSecurityConfig {
      * 其余路径，走这个默认过滤链
      */
     @Bean
-    @Order(Integer.MAX_VALUE) // 这个过滤链最后加载
+    @Order(value = Integer.MAX_VALUE) // 这个过滤链最后加载
     @ConditionalOnProperty(
             name = "spring.security.default-api-filter-chain",
             havingValue = "true",

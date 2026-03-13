@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
+import org.jspecify.annotations.Nullable;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.util.Assert;
@@ -17,17 +18,26 @@ public class SmsAuthenticationToken extends AbstractAuthenticationToken {
     private String smsCode;
     private UserLoginInfo currentUser;
 
-    public SmsAuthenticationToken(String phone, String smsCode) {
+    private SmsAuthenticationToken(String phone, String smsCode) {
         this.phone = phone;
         this.smsCode = smsCode;
         super(List.of());
         super.setAuthenticated(false);
     }
 
-    public SmsAuthenticationToken(UserLoginInfo currentUser, Collection<? extends GrantedAuthority> authorities) {
+    private SmsAuthenticationToken(UserLoginInfo currentUser, Collection<? extends GrantedAuthority> authorities) {
         this.currentUser = currentUser;
         super(authorities);
         super.setAuthenticated(true);
+    }
+
+    public static SmsAuthenticationToken unauthenticated(@Nullable String username, @Nullable String smsCode) {
+        return new SmsAuthenticationToken(username, smsCode);
+    }
+
+    public static SmsAuthenticationToken authenticated(
+            UserLoginInfo currentUser, Collection<? extends GrantedAuthority> authorities) {
+        return new SmsAuthenticationToken(currentUser, authorities);
     }
 
     @Override

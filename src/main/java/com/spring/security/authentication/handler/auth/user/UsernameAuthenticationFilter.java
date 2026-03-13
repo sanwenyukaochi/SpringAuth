@@ -63,9 +63,9 @@ public class UsernameAuthenticationFilter extends AbstractAuthenticationProcessi
         String password = obtainPassword(usernameLoginRequest);
 
         // 封装成Spring Security需要的对象
-        UsernameAuthenticationToken authentication = new UsernameAuthenticationToken(username, password);
+        UsernameAuthenticationToken authRequest = UsernameAuthenticationToken.unauthenticated(username, password);
         // 开始登录认证。SpringSecurity会利用 Authentication对象去寻找 AuthenticationProvider进行登录认证
-        return getAuthenticationManager().authenticate(authentication);
+        return getAuthenticationManager().authenticate(authRequest);
     }
 
     @Nullable protected String obtainPassword(UsernameLoginRequest usernameLoginRequest) {
