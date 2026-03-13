@@ -35,11 +35,15 @@ public class UsernameAuthenticationFilter extends AbstractAuthenticationProcessi
 
     private boolean postOnly = true;
 
+    private final JsonMapper jsonMapper;
+
     public UsernameAuthenticationFilter(
             AuthenticationManager authenticationManager,
             AuthenticationSuccessHandler authenticationSuccessHandler,
-            AuthenticationFailureHandler authenticationFailureHandler) {
+            AuthenticationFailureHandler authenticationFailureHandler,
+            JsonMapper jsonMapper) {
         super(DEFAULT_ANT_PATH_REQUEST_MATCHER, authenticationManager);
+        this.jsonMapper = jsonMapper;
         setAuthenticationSuccessHandler(authenticationSuccessHandler);
         setAuthenticationFailureHandler(authenticationFailureHandler);
     }
@@ -54,11 +58,9 @@ public class UsernameAuthenticationFilter extends AbstractAuthenticationProcessi
         }
         // 提取请求数据
         UsernameLoginRequest usernameLoginRequest =
-                JsonMapper.shared().readValue(request.getInputStream(), UsernameLoginRequest.class);
+                jsonMapper.readValue(request.getInputStream(), UsernameLoginRequest.class);
         String username = obtainUsername(usernameLoginRequest);
-        username = (username != null) ? username.trim() : "";
         String password = obtainPassword(usernameLoginRequest);
-        password = (password != null) ? password : "";
 
         // 封装成Spring Security需要的对象
         UsernameAuthenticationToken authentication = new UsernameAuthenticationToken(username, password);

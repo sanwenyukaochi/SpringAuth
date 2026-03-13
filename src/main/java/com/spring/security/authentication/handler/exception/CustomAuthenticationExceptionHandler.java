@@ -23,6 +23,7 @@ import tools.jackson.databind.json.JsonMapper;
 @Component
 @RequiredArgsConstructor
 public class CustomAuthenticationExceptionHandler implements AuthenticationEntryPoint {
+    private final JsonMapper jsonMapper;
 
     @Override
     public void commence(
@@ -34,6 +35,6 @@ public class CustomAuthenticationExceptionHandler implements AuthenticationEntry
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         log.warn("登录异常：msg={}", authenticationException.getMessage(), authenticationException);
-        JsonMapper.shared().writeValue(response.getOutputStream(), Result.error(BaseCode.AUTHENTICATION_ERROR, null));
+        jsonMapper.writeValue(response.getOutputStream(), Result.error(BaseCode.AUTHENTICATION_ERROR, null));
     }
 }

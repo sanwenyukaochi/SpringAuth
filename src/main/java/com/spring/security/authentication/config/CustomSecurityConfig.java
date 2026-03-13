@@ -38,6 +38,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.savedrequest.NullRequestCache;
+import tools.jackson.databind.json.JsonMapper;
 
 @Configuration
 @EnableWebSecurity
@@ -109,7 +110,8 @@ public class CustomSecurityConfig {
             SmsAuthenticationProvider smsAuthenticationProvider,
             EmailAuthenticationProvider emailAuthenticationProvider,
             GitHubOAuth2AuthorizationCodeAuthenticationProvider gitHubOAuth2AuthorizationCodeAuthenticationProvider,
-            GitHubOAuth2LoginAuthenticationProvider gitHubOAuth2LoginAuthenticationProvider) {
+            GitHubOAuth2LoginAuthenticationProvider gitHubOAuth2LoginAuthenticationProvider,
+            JsonMapper jsonMapper) {
         commonHttpSetting(httpSecurity);
         // 使用securityMatcher限定当前配置作用的路径
         httpSecurity
@@ -118,17 +120,26 @@ public class CustomSecurityConfig {
 
         // 用户名密码认证过滤器
         UsernameAuthenticationFilter usernameAuthenticationFilter = new UsernameAuthenticationFilter(
-                new ProviderManager(List.of(usernameAuthenticationProvider)), loginSuccessHandler, loginFailHandler);
+                new ProviderManager(List.of(usernameAuthenticationProvider)),
+                loginSuccessHandler,
+                loginFailHandler,
+                jsonMapper);
         httpSecurity.addFilterBefore(usernameAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         // 短信验证码认证过滤器
         SmsAuthenticationFilter smsAuthenticationFilter = new SmsAuthenticationFilter(
-                new ProviderManager(List.of(smsAuthenticationProvider)), loginSuccessHandler, loginFailHandler);
+                new ProviderManager(List.of(smsAuthenticationProvider)),
+                loginSuccessHandler,
+                loginFailHandler,
+                jsonMapper);
         httpSecurity.addFilterBefore(smsAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         // 邮箱密码认证过滤器
         EmailAuthenticationFilter emailAuthenticationFilter = new EmailAuthenticationFilter(
-                new ProviderManager(List.of(emailAuthenticationProvider)), loginSuccessHandler, loginFailHandler);
+                new ProviderManager(List.of(emailAuthenticationProvider)),
+                loginSuccessHandler,
+                loginFailHandler,
+                jsonMapper);
         httpSecurity.addFilterBefore(emailAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         // GitHub OAuth2 授权请求过滤器 - 负责跳转到GitHub登录页

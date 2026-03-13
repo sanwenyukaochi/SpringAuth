@@ -15,11 +15,12 @@ import tools.jackson.databind.json.JsonMapper;
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
 public class UserController {
+    private final JsonMapper jsonMapper;
 
     @GetMapping("/info")
     public Result<UserLoginInfo> getUserInfo(Authentication authentication) {
         UserLoginInfo userLoginInfo = (UserLoginInfo) authentication.getPrincipal();
-        log.info("用户登录信息：{}", JsonMapper.shared().writeValueAsString(userLoginInfo));
+        log.info("用户登录信息：{}", jsonMapper.writeValueAsString(userLoginInfo));
         return Result.success(userLoginInfo);
     }
 }

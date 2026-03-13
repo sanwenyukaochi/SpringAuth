@@ -24,6 +24,7 @@ import tools.jackson.databind.json.JsonMapper;
 @Component
 @RequiredArgsConstructor
 public class CustomAuthorizationExceptionHandler implements AccessDeniedHandler {
+    private final JsonMapper jsonMapper;
 
     @Override
     public void handle(
@@ -35,6 +36,6 @@ public class CustomAuthorizationExceptionHandler implements AccessDeniedHandler 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpStatus.FORBIDDEN.value());
         log.warn("访问异常：msg={}", accessDeniedException.getMessage(), accessDeniedException);
-        JsonMapper.shared().writeValue(response.getOutputStream(), Result.error(BaseCode.AUTH_ACCESS_DENIED, null));
+        jsonMapper.writeValue(response.getOutputStream(), Result.error(BaseCode.AUTH_ACCESS_DENIED, null));
     }
 }

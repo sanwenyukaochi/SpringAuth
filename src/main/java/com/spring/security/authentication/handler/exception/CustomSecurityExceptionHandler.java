@@ -26,6 +26,7 @@ import tools.jackson.databind.json.JsonMapper;
 @Component
 @RequiredArgsConstructor
 public class CustomSecurityExceptionHandler extends OncePerRequestFilter {
+    private final JsonMapper jsonMapper;
 
     @Override
     public void doFilterInternal(
@@ -40,22 +41,20 @@ public class CustomSecurityExceptionHandler extends OncePerRequestFilter {
             response.setCharacterEncoding(StandardCharsets.UTF_8.name());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.setStatus(e.getHttpStatus().value());
-            JsonMapper.shared().writeValue(response.getOutputStream(), Result.error(e.getCode(), e.getMessage(), null));
+            jsonMapper.writeValue(response.getOutputStream(), Result.error(e.getCode(), e.getMessage(), null));
         } catch (AuthenticationException | AccessDeniedException e) {
             log.warn("Spring Security异常：msg={}", e.getMessage(), e);
             response.setCharacterEncoding(StandardCharsets.UTF_8.name());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.setStatus(HttpStatus.FORBIDDEN.value());
-            JsonMapper.shared()
-                    .writeValue(
-                            response.getOutputStream(),
-                            Result.error(BaseCode.SYSTEM_ERROR.getCode(), e.getMessage(), null));
+            jsonMapper.writeValue(
+                    response.getOutputStream(), Result.error(BaseCode.SYSTEM_ERROR.getCode(), e.getMessage(), null));
         } catch (Exception e) {
             log.warn("未知异常：msg={}", e.getMessage(), e);
             response.setCharacterEncoding(StandardCharsets.UTF_8.name());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            JsonMapper.shared().writeValue(response.getOutputStream(), Result.error(BaseCode.SYSTEM_ERROR, null));
+            jsonMapper.writeValue(response.getOutputStream(), Result.error(BaseCode.SYSTEM_ERROR, null));
         }
     }
 }

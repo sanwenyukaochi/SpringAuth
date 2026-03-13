@@ -28,11 +28,15 @@ public class EmailAuthenticationFilter extends AbstractAuthenticationProcessingF
 
     private boolean postOnly = true;
 
+    private final JsonMapper jsonMapper;
+
     public EmailAuthenticationFilter(
             AuthenticationManager authenticationManager,
             AuthenticationSuccessHandler authenticationSuccessHandler,
-            AuthenticationFailureHandler authenticationFailureHandler) {
+            AuthenticationFailureHandler authenticationFailureHandler,
+            JsonMapper jsonMapper) {
         super(DEFAULT_ANT_PATH_REQUEST_MATCHER, authenticationManager);
+        this.jsonMapper = jsonMapper;
         setAuthenticationSuccessHandler(authenticationSuccessHandler);
         setAuthenticationFailureHandler(authenticationFailureHandler);
     }
@@ -46,12 +50,9 @@ public class EmailAuthenticationFilter extends AbstractAuthenticationProcessingF
             throw new AuthenticationServiceException("Authentication method not supported: " + request.getMethod());
         }
         // 提取请求数据
-        EmailLoginRequest emailLoginRequest =
-                JsonMapper.shared().readValue(request.getInputStream(), EmailLoginRequest.class);
+        EmailLoginRequest emailLoginRequest = jsonMapper.readValue(request.getInputStream(), EmailLoginRequest.class);
         String email = obtainEmail(emailLoginRequest);
-        email = (email != null) ? email.trim() : "";
         String password = obtainPassword(emailLoginRequest);
-        password = (password != null) ? password : "";
 
         // 封装成Spring Security需要的对象
         EmailAuthenticationToken authentication = new EmailAuthenticationToken(email, password);

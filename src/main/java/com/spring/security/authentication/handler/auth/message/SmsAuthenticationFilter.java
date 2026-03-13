@@ -28,11 +28,15 @@ public class SmsAuthenticationFilter extends AbstractAuthenticationProcessingFil
 
     private boolean postOnly = true;
 
+    private final JsonMapper jsonMapper;
+
     public SmsAuthenticationFilter(
             AuthenticationManager authenticationManager,
             AuthenticationSuccessHandler authenticationSuccessHandler,
-            AuthenticationFailureHandler authenticationFailureHandler) {
+            AuthenticationFailureHandler authenticationFailureHandler,
+            JsonMapper jsonMapper) {
         super(DEFAULT_ANT_PATH_REQUEST_MATCHER, authenticationManager);
+        this.jsonMapper = jsonMapper;
         setAuthenticationSuccessHandler(authenticationSuccessHandler);
         setAuthenticationFailureHandler(authenticationFailureHandler);
     }
@@ -46,12 +50,9 @@ public class SmsAuthenticationFilter extends AbstractAuthenticationProcessingFil
             throw new AuthenticationServiceException("Authentication method not supported: " + request.getMethod());
         }
         // 提取请求数据
-        SmsLoginRequest smsLoginRequest =
-                JsonMapper.shared().readValue(request.getInputStream(), SmsLoginRequest.class);
+        SmsLoginRequest smsLoginRequest = jsonMapper.readValue(request.getInputStream(), SmsLoginRequest.class);
         String phone = obtainPhone(smsLoginRequest);
-        phone = (phone != null) ? phone.trim() : "";
         String captcha = obtainCaptcha(smsLoginRequest);
-        captcha = (captcha != null) ? captcha : "";
 
         // 封装成Spring Security需要的对象
         SmsAuthenticationToken authentication = new SmsAuthenticationToken(phone, captcha);

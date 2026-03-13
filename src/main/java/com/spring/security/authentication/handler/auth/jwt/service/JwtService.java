@@ -26,6 +26,8 @@ public class JwtService {
     @Value("${spring.app.jwtSecret}")
     private String jwtSecret;
 
+    private final JsonMapper jsonMapper;
+
     public String getJwtFromHeader(HttpServletRequest request) {
         String bearerToken = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (bearerToken != null && bearerToken.startsWith(JWTConstants.BEARER_PREFIX)) {
@@ -45,7 +47,7 @@ public class JwtService {
 
     public String generateTokenFromUsername(
             String username, JwtTokenUserLoginInfo jwtTokenUserLoginInfo, long expiredTime) {
-        String json = JsonMapper.shared().writeValueAsString(jwtTokenUserLoginInfo);
+        String json = jsonMapper.writeValueAsString(jwtTokenUserLoginInfo);
         return Jwts.builder()
                 .subject(username)
                 .claim(JWTConstants.USER_INFO, json)
@@ -65,7 +67,7 @@ public class JwtService {
                     Jwts.parser().verifyWith((SecretKey) key()).build().parseSignedClaims(authToken);
             Claims claims = claimsJws.getPayload();
             String json = claims.get(JWTConstants.USER_INFO, String.class);
-            return JsonMapper.shared().readValue(json, JwtTokenUserLoginInfo.class);
+            return jsonMapper.readValue(json, JwtTokenUserLoginInfo.class);
         } catch (MalformedJwtException e) {
             log.error("JWT Token 无效: {}", e.getMessage());
             throw new BaseException(BaseCode.TOKEN_MALFORMED);

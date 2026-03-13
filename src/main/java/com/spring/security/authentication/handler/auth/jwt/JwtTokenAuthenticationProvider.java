@@ -36,6 +36,7 @@ public class JwtTokenAuthenticationProvider implements AuthenticationProvider {
     protected MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
     private final JwtService jwtService;
     private final RedissonClient redissonClient;
+    private final JsonMapper jsonMapper;
 
     @Override
     @SneakyThrows
@@ -71,7 +72,7 @@ public class JwtTokenAuthenticationProvider implements AuthenticationProvider {
         // 认证通过，使用 Authenticated 为 true 的构造函数
         JwtTokenAuthenticationToken result = new JwtTokenAuthenticationToken(userLoginInfo, List.of());
         // 必须转化成Map
-        result.setDetails(JsonMapper.shared().convertValue(authentication.getDetails(), Map.class));
+        result.setDetails(jsonMapper.convertValue(authentication.getDetails(), Map.class));
         log.debug("JWT认证成功，用户: {}", userLoginInfo.getUsername());
         return result;
     }

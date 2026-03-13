@@ -39,12 +39,14 @@ public class GitHubOAuth2LoginAuthenticationProvider implements AuthenticationPr
     private final UserIdentityRepository userIdentityRepository;
     private final UserRepository userRepository;
     private GrantedAuthoritiesMapper authoritiesMapper = (authorities) -> authorities;
+    private final JsonMapper jsonMapper;
 
     public GitHubOAuth2LoginAuthenticationProvider(
             GitHubOAuth2AuthorizationCodeAuthenticationProvider authorizationCodeAuthenticationProvider,
             GitHubOAuth2UserService gitHubOAuth2UserService,
             UserIdentityRepository userIdentityRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            JsonMapper jsonMapper) {
         Assert.notNull(
                 authorizationCodeAuthenticationProvider, "authorizationCodeAuthenticationProvider cannot be null");
         Assert.notNull(gitHubOAuth2UserService, "userService cannot be null");
@@ -54,6 +56,7 @@ public class GitHubOAuth2LoginAuthenticationProvider implements AuthenticationPr
         this.gitHubOAuth2UserService = gitHubOAuth2UserService;
         this.userIdentityRepository = userIdentityRepository;
         this.userRepository = userRepository;
+        this.jsonMapper = jsonMapper;
     }
 
     @Override
@@ -144,7 +147,7 @@ public class GitHubOAuth2LoginAuthenticationProvider implements AuthenticationPr
                 loginAuthenticationToken.getAccessToken(),
                 loginAuthenticationToken.getRefreshToken());
         // 必须转化成Map
-        result.setDetails(JsonMapper.shared().convertValue(authentication.getDetails(), Map.class));
+        result.setDetails(jsonMapper.convertValue(authentication.getDetails(), Map.class));
         log.debug("用户名认证成功，用户: {}", userLoginInfo.getUsername());
         return result;
     }

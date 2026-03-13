@@ -35,6 +35,7 @@ public class LoginSuccessHandler extends AbstractAuthenticationTargetUrlRequestH
         implements AuthenticationSuccessHandler {
     private final JwtService jwtService;
     private final RedissonClient redissonClient;
+    private final JsonMapper jsonMapper;
 
     @PostConstruct
     public void disableRedirectStrategy() {
@@ -86,6 +87,6 @@ public class LoginSuccessHandler extends AbstractAuthenticationTargetUrlRequestH
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpStatus.OK.value());
-        JsonMapper.shared().writeValue(response.getOutputStream(), Result.success(loginResponse));
+        jsonMapper.writeValue(response.getOutputStream(), Result.success(loginResponse));
     }
 }

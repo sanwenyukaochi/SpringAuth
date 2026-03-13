@@ -23,6 +23,7 @@ import tools.jackson.databind.json.JsonMapper;
 @Component
 @RequiredArgsConstructor
 public class LoginFailHandler implements AuthenticationFailureHandler {
+    private final JsonMapper jsonMapper;
 
     @Override
     public void onAuthenticationFailure(
@@ -34,9 +35,8 @@ public class LoginFailHandler implements AuthenticationFailureHandler {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         log.warn("登录异常：msg={}", authenticationException.getMessage(), authenticationException);
-        JsonMapper.shared()
-                .writeValue(
-                        response.getOutputStream(),
-                        Result.error(BaseCode.AUTH_LOGIN_FAILED.getCode(), authenticationException.getMessage(), null));
+        jsonMapper.writeValue(
+                response.getOutputStream(),
+                Result.error(BaseCode.AUTH_LOGIN_FAILED.getCode(), authenticationException.getMessage(), null));
     }
 }

@@ -32,6 +32,7 @@ public class UsernameAuthenticationProvider implements AuthenticationProvider {
     protected MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JsonMapper jsonMapper;
 
     @Override
     public Authentication authenticate(@NonNull Authentication authentication) throws AuthenticationException {
@@ -74,7 +75,7 @@ public class UsernameAuthenticationProvider implements AuthenticationProvider {
         // 认证通过，使用 Authenticated 为 true 的构造函数
         UsernameAuthenticationToken result = new UsernameAuthenticationToken(userLoginInfo, List.of());
         // 必须转化成Map
-        result.setDetails(JsonMapper.shared().convertValue(authentication.getDetails(), Map.class));
+        result.setDetails(jsonMapper.convertValue(authentication.getDetails(), Map.class));
         log.debug("用户名认证成功，用户: {}", userLoginInfo.getUsername());
         return result;
     }
