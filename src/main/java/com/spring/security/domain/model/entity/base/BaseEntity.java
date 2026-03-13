@@ -14,11 +14,11 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass
-@Schema(name = "BaseEntity", title = "基础信息字段", description = "基础信息字段")
+@Schema(title = "基础信息字段")
 public abstract class BaseEntity {
 
     @Id
+    @Schema(title = "主键ID")
     @Column(comment = "主键ID", name = "id", nullable = false)
-    @Schema(title = "主键ID", name = "id")
     private Long id;
 }
