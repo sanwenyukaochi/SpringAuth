@@ -23,4 +23,14 @@ public class UserController {
         log.info("用户登录信息：{}", jsonMapper.writeValueAsString(userLoginInfo));
         return Result.success(userLoginInfo);
     }
+
+    @GetMapping("/details")
+    public Result<Object> getDetails(Authentication authentication) {
+        return Result.success(authentication.getDetails());
+    }
+
+    @GetMapping("/principal")
+    public Result<Object> getPrincipal(Authentication authentication) {
+        return Result.success(authentication.getPrincipal());
+    }
 }

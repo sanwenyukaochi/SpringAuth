@@ -17,6 +17,7 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -64,10 +65,10 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             // 创建未认证的Authentication对象
-            JwtTokenAuthenticationToken unauthenticatedToken = JwtTokenAuthenticationToken.unauthenticated(jwtToken);
-
+            JwtTokenAuthenticationToken authRequest = JwtTokenAuthenticationToken.unauthenticated(jwtToken);
+            authRequest.setDetails(new WebAuthenticationDetails(request));
             // 委托给AuthenticationManager进行认证
-            Authentication authenticatedToken = authenticationManager.authenticate(unauthenticatedToken);
+            Authentication authenticatedToken = authenticationManager.authenticate(authRequest);
 
             // 认证成功，将结果设置到SecurityContext中
             SecurityContextHolder.getContext().setAuthentication(authenticatedToken);
