@@ -55,7 +55,7 @@ public class EmailAuthenticationFilter extends AbstractAuthenticationProcessingF
         String password = obtainPassword(emailLoginRequest);
 
         // 封装成Spring Security需要的对象
-        EmailAuthenticationToken authentication = new EmailAuthenticationToken(email, password);
+        EmailAuthenticationToken authentication = EmailAuthenticationToken.unauthenticated(email, password);
         // 开始登录认证。SpringSecurity会利用 Authentication对象去寻找 AuthenticationProvider进行登录认证
         return getAuthenticationManager().authenticate(authentication);
     }

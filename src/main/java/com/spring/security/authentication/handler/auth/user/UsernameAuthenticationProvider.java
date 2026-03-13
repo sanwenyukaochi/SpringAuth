@@ -73,7 +73,7 @@ public class UsernameAuthenticationProvider implements AuthenticationProvider {
                 user.getTwoFactorSecret(),
                 user.getTwoFactorEnabled());
         // 认证通过，使用 Authenticated 为 true 的构造函数
-        UsernameAuthenticationToken result = new UsernameAuthenticationToken(userLoginInfo, List.of());
+        UsernameAuthenticationToken result = UsernameAuthenticationToken.authenticated(userLoginInfo, List.of());
         // 必须转化成Map
         result.setDetails(jsonMapper.convertValue(authentication.getDetails(), Map.class));
         log.debug("用户名认证成功，用户: {}", userLoginInfo.getUsername());

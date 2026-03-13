@@ -55,7 +55,7 @@ public class SmsAuthenticationFilter extends AbstractAuthenticationProcessingFil
         String captcha = obtainCaptcha(smsLoginRequest);
 
         // 封装成Spring Security需要的对象
-        SmsAuthenticationToken authentication = new SmsAuthenticationToken(phone, captcha);
+        SmsAuthenticationToken authentication = SmsAuthenticationToken.unauthenticated(phone, captcha);
         // 提取参数阶段，authenticated一定是false
         return getAuthenticationManager().authenticate(authentication);
     }

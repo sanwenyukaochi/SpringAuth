@@ -72,7 +72,7 @@ public class EmailAuthenticationProvider implements AuthenticationProvider {
                 user.getTwoFactorSecret(),
                 user.getTwoFactorEnabled());
         // 认证通过，使用 Authenticated 为 true 的构造函数
-        EmailAuthenticationToken result = new EmailAuthenticationToken(userLoginInfo, List.of());
+        EmailAuthenticationToken result = EmailAuthenticationToken.authenticated(userLoginInfo, List.of());
         // 必须转化成Map
         result.setDetails(jsonMapper.convertValue(authentication.getDetails(), Map.class));
         log.debug("邮箱认证成功，用户: {}", userLoginInfo.getUsername());
