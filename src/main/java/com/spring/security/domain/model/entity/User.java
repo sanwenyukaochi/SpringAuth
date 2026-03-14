@@ -28,7 +28,7 @@ public class User extends BaseEntity {
     private String username;
 
     @Schema(title = "密码", accessMode = Schema.AccessMode.WRITE_ONLY)
-    @Column(comment = "用户密码", name = "password", nullable = false, length = 120)
+    @Column(comment = "用户密码", name = "password_hash", nullable = false, length = 120)
     private String password;
 
     @Schema(title = "邮箱")

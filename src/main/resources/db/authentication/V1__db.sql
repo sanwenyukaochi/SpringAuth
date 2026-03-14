@@ -10,7 +10,7 @@ create table sys_user
     email                   varchar(50)  not null,
     phone                   varchar(50)  not null,
     two_factor_secret       varchar(64),
-    password                varchar(120) not null,
+    password_hash           varchar(120) not null,
     primary key (id),
     constraint uk_user_username unique (username),
     constraint uk_user_email unique (email)
@@ -26,7 +26,7 @@ comment on column sys_user.username is '用户名';
 comment on column sys_user.email is '邮箱';
 comment on column sys_user.phone is '手机号';
 comment on column sys_user.two_factor_secret is '双因素认证密钥（TOTP Secret，用于 Google Authenticator 等）';
-comment on column sys_user.password is '用户密码';
+comment on column sys_user.password_hash is '用户密码';
 create table sys_user_identity
 (
     id               bigint      not null,
@@ -45,7 +45,7 @@ comment on column sys_user_identity.provider is '登录提供商';
 
 
 INSERT INTO public.sys_user (id, account_non_expired, account_non_locked, credentials_non_expired, email, enabled,
-                             password, phone, two_factor_enabled, two_factor_secret, username)
+                             password_hash, phone, two_factor_enabled, two_factor_secret, username)
 VALUES (1978249459921846272, true, true, true, 'sanwenyukaochi@outlook.com', true,
         '$2a$10$ZJ3fmKhaAyFzn/p6yJnpb.YLQxLFhxqp.w/NN0I1mj4FlM1vRt0eu', '18867102143', false, null, 'sanwenyukaochi');
 
