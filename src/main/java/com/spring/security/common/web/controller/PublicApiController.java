@@ -1,8 +1,10 @@
 package com.spring.security.common.web.controller;
 
+import com.spring.security.authentication.handler.auth.oneTimeToken.service.impl.RedisOneTimeTokenService;
 import com.spring.security.domain.model.dto.Result;
 import com.spring.security.domain.model.entity.User;
 import com.spring.security.domain.repository.UserRepository;
+import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -10,8 +12,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.ott.GenerateOneTimeTokenRequest;
+import org.springframework.security.authentication.ott.OneTimeToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,6 +28,7 @@ public class PublicApiController {
 
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
+    private final RedisOneTimeTokenService redisOneTimeTokenService;
 
     @GetMapping
     public Result<Map<String, String>> encode() {
@@ -38,5 +44,13 @@ public class PublicApiController {
                 "id", user.getId(),
                 "username", user.getUsername(),
                 "phone", user.getPhone())));
+    }
+
+    @PostMapping("/send-one-time-token")
+    public Result<?> sendOneTimeToken() {
+        OneTimeToken ott = redisOneTimeTokenService.generate(
+                new GenerateOneTimeTokenRequest("sanwenyukaochi", Duration.ofMinutes(5)));
+        IO.println(ott.getTokenValue());
+        return Result.success(null);
     }
 }

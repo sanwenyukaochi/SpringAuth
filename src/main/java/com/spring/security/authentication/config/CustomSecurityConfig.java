@@ -15,6 +15,8 @@ import com.spring.security.authentication.handler.auth.jwt.JwtTokenAuthenticatio
 import com.spring.security.authentication.handler.auth.jwt.service.JwtService;
 import com.spring.security.authentication.handler.auth.message.SmsAuthenticationFilter;
 import com.spring.security.authentication.handler.auth.message.SmsAuthenticationProvider;
+import com.spring.security.authentication.handler.auth.oneTimeToken.OneTimeTokenAuthenticationFilter;
+import com.spring.security.authentication.handler.auth.oneTimeToken.OneTimeTokenAuthenticationProvider;
 import com.spring.security.authentication.handler.auth.user.UsernameAuthenticationFilter;
 import com.spring.security.authentication.handler.auth.user.UsernameAuthenticationProvider;
 import com.spring.security.authentication.handler.exception.CustomAuthenticationExceptionHandler;
@@ -109,6 +111,7 @@ public class CustomSecurityConfig {
             UsernameAuthenticationProvider usernameAuthenticationProvider,
             SmsAuthenticationProvider smsAuthenticationProvider,
             EmailAuthenticationProvider emailAuthenticationProvider,
+            OneTimeTokenAuthenticationProvider oneTimeTokenAuthenticationProvider,
             GitHubOAuth2AuthorizationCodeAuthenticationProvider gitHubOAuth2AuthorizationCodeAuthenticationProvider,
             GitHubOAuth2LoginAuthenticationProvider gitHubOAuth2LoginAuthenticationProvider,
             JsonMapper jsonMapper) {
@@ -141,6 +144,14 @@ public class CustomSecurityConfig {
                 loginFailHandler,
                 jsonMapper);
         httpSecurity.addFilterBefore(emailAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+        // 一次性认证过滤器
+        OneTimeTokenAuthenticationFilter oneTimeTokenAuthenticationFilter = new OneTimeTokenAuthenticationFilter(
+                new ProviderManager(List.of(oneTimeTokenAuthenticationProvider)),
+                loginSuccessHandler,
+                loginFailHandler,
+                jsonMapper);
+        httpSecurity.addFilterBefore(oneTimeTokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         // GitHub OAuth2 授权请求过滤器 - 负责跳转到GitHub登录页
         GitHubOAuth2AuthorizationRedirectFilter gitHubOAuth2AuthorizationRedirectFilter =
