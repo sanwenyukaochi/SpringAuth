@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
+import org.jspecify.annotations.Nullable;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.util.Assert;
@@ -34,12 +35,12 @@ public class GitHubOAuth2AuthenticationToken extends AbstractAuthenticationToken
     }
 
     @Override
-    public Object getCredentials() {
+    public @Nullable Object getCredentials() {
         return authorizedClientRegistrationId;
     }
 
     @Override
-    public UserLoginInfo getPrincipal() {
+    public @Nullable UserLoginInfo getPrincipal() {
         return currentUser;
     }
 

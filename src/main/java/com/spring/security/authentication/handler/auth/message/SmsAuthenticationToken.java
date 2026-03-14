@@ -41,12 +41,12 @@ public class SmsAuthenticationToken extends AbstractAuthenticationToken {
     }
 
     @Override
-    public Object getCredentials() {
+    public @Nullable Object getCredentials() {
         return smsCode;
     }
 
     @Override
-    public UserLoginInfo getPrincipal() {
+    public @Nullable UserLoginInfo getPrincipal() {
         return currentUser;
     }
 

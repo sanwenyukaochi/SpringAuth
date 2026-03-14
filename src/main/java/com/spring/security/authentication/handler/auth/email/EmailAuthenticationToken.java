@@ -41,12 +41,12 @@ public class EmailAuthenticationToken extends AbstractAuthenticationToken {
     }
 
     @Override
-    public Object getCredentials() {
+    public @Nullable Object getCredentials() {
         return password;
     }
 
     @Override
-    public UserLoginInfo getPrincipal() {
+    public @Nullable UserLoginInfo getPrincipal() {
         return currentUser;
     }
 

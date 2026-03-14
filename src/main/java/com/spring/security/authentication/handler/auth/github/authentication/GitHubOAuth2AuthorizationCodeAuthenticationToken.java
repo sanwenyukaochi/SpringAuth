@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
+import org.jspecify.annotations.Nullable;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
@@ -48,12 +49,12 @@ public class GitHubOAuth2AuthorizationCodeAuthenticationToken extends AbstractAu
     }
 
     @Override
-    public Object getPrincipal() {
+    public @Nullable Object getPrincipal() {
         return this.clientRegistration.getClientId();
     }
 
     @Override
-    public Object getCredentials() {
+    public @Nullable Object getCredentials() {
         return (this.accessToken != null)
                 ? this.accessToken.getTokenValue()
                 : this.authorizationExchange.getAuthorizationResponse().getCode();
