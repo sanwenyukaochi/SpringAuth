@@ -2,6 +2,7 @@ package com.spring.security.authentication.handler.auth.oneTimeToken;
 
 import com.spring.security.authentication.handler.auth.UserLoginInfo;
 import com.spring.security.authentication.handler.auth.oneTimeToken.service.RedisOneTimeTokenService;
+import com.spring.security.authentication.handler.authorization.Authority;
 import com.spring.security.common.web.enums.BaseCode;
 import com.spring.security.common.web.exception.BaseException;
 import com.spring.security.domain.model.entity.User;
@@ -27,7 +28,7 @@ import org.springframework.util.Assert;
 @RequiredArgsConstructor
 public class OneTimeTokenAuthenticationProvider implements AuthenticationProvider {
     protected MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
-    private static final String AUTHORITY = FactorGrantedAuthority.OTT_AUTHORITY;
+    private static final String AUTHORITY = Authority.OTT_AUTHORITY;
     private final UserRepository userRepository;
     private final RedisOneTimeTokenService redisOneTimeTokenService;
 
@@ -70,6 +71,8 @@ public class OneTimeTokenAuthenticationProvider implements AuthenticationProvide
             String username, OneTimeTokenAuthenticationToken authentication) throws AuthenticationException {
         User loadedUser =
                 userRepository.findByUsername(username).orElseThrow(() -> new BaseException(BaseCode.USER_NOT_FOUND));
+        Collection<GrantedAuthority> authorities = new LinkedHashSet<>();
+        authorities.add(FactorGrantedAuthority.fromAuthority(AUTHORITY));
         log.debug("用户信息查询成功，用户: {}", loadedUser.getUsername());
         return new UserLoginInfo(
                 UUID.randomUUID().toString(),
@@ -83,7 +86,8 @@ public class OneTimeTokenAuthenticationProvider implements AuthenticationProvide
                 loadedUser.getCredentialsNonExpired(),
                 loadedUser.getEnabled(),
                 loadedUser.getMfaSecret(),
-                loadedUser.getMfaEnabled());
+                loadedUser.getMfaEnabled(),
+                authorities);
     }
 
     protected OneTimeToken retrieveUser(String token, OneTimeTokenAuthenticationToken authentication)

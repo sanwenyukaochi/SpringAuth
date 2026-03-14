@@ -3,13 +3,9 @@ package com.spring.security.authentication.handler.auth;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 import lombok.*;
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.Assert;
@@ -33,37 +29,41 @@ public class UserLoginInfo implements UserDetails {
 
     private String phone;
     private String email;
-    private Boolean accountNonLocked;
-    private Boolean accountNonExpired;
-    private Boolean credentialsNonExpired;
-    private Boolean enabled;
-    private String twoFactorSecret;
-    private Boolean twoFactorEnabled;
+    private Set<GrantedAuthority> authorities;
+    private boolean accountNonLocked;
+    private boolean accountNonExpired;
+    private boolean credentialsNonExpired;
+    private boolean enabled;
+    private String mfaSecret;
+    private Boolean mfaEnabled;
 
-    @Override
-    public @NonNull Collection<? extends GrantedAuthority> getAuthorities() {
-        // TODO 权限
-        return List.of();
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return accountNonExpired;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return accountNonLocked;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return credentialsNonExpired;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return enabled;
+    public UserLoginInfo(
+            String sessionId,
+            Long id,
+            String username,
+            @Nullable String password,
+            String phone,
+            String email,
+            boolean accountNonLocked,
+            boolean accountNonExpired,
+            boolean credentialsNonExpired,
+            boolean enabled,
+            String mfaSecret,
+            Boolean mfaEnabled,
+            Collection<? extends GrantedAuthority> authorities) {
+        this.sessionId = sessionId;
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.phone = phone;
+        this.email = email;
+        this.accountNonLocked = accountNonLocked;
+        this.accountNonExpired = accountNonExpired;
+        this.credentialsNonExpired = credentialsNonExpired;
+        this.enabled = enabled;
+        this.mfaSecret = mfaSecret;
+        this.mfaEnabled = mfaEnabled;
+        this.authorities = Collections.unmodifiableSet(sortAuthorities(authorities));
     }
 
     private static SortedSet<GrantedAuthority> sortAuthorities(Collection<? extends GrantedAuthority> authorities) {

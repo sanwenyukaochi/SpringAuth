@@ -1,6 +1,7 @@
 package com.spring.security.authentication.handler.auth.message;
 
 import com.spring.security.authentication.handler.auth.UserLoginInfo;
+import com.spring.security.authentication.handler.authorization.Authority;
 import com.spring.security.common.web.enums.BaseCode;
 import com.spring.security.common.web.exception.BaseException;
 import com.spring.security.common.web.service.RedisVerificationCodeService;
@@ -8,6 +9,8 @@ import com.spring.security.common.web.service.RedisVerificationCodeService.Verif
 import com.spring.security.common.web.service.RedisVerificationCodeService.VerificationPurpose;
 import com.spring.security.domain.model.entity.User;
 import com.spring.security.domain.repository.UserRepository;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +21,9 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.SpringSecurityMessageSource;
+import org.springframework.security.core.authority.FactorGrantedAuthority;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
@@ -32,6 +37,7 @@ public class SmsAuthenticationProvider implements AuthenticationProvider {
     protected MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
     private final UserRepository userRepository;
     private final RedisVerificationCodeService redisVerificationCodeService;
+    private static final String AUTHORITY = Authority.SMS_AUTHORITY;
 
     @Override
     public Authentication authenticate(@NonNull Authentication authentication) throws AuthenticationException {
@@ -69,6 +75,8 @@ public class SmsAuthenticationProvider implements AuthenticationProvider {
             throws AuthenticationException {
         User loadedUser =
                 userRepository.findByPhone(phone).orElseThrow(() -> new BaseException(BaseCode.USER_PHONE_NOT_FOUND));
+        Collection<GrantedAuthority> authorities = new LinkedHashSet<>();
+        authorities.add(FactorGrantedAuthority.fromAuthority(AUTHORITY));
         log.debug("用户信息查询成功，用户: {}", loadedUser.getUsername());
         return new UserLoginInfo(
                 UUID.randomUUID().toString(),
@@ -82,7 +90,8 @@ public class SmsAuthenticationProvider implements AuthenticationProvider {
                 loadedUser.getCredentialsNonExpired(),
                 loadedUser.getEnabled(),
                 loadedUser.getMfaSecret(),
-                loadedUser.getMfaEnabled());
+                loadedUser.getMfaEnabled(),
+                authorities);
     }
 
     protected void additionalAuthenticationChecks(UserLoginInfo userLoginInfo, SmsAuthenticationToken authentication)
