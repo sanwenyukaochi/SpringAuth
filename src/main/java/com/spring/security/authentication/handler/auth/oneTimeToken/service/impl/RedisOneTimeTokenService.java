@@ -21,7 +21,7 @@ import org.springframework.util.Assert;
 @RequiredArgsConstructor
 public class RedisOneTimeTokenService implements OneTimeTokenService {
 
-    private static final String KEY_PATTERN = "redis:onetimetoken:%s";
+    private static final String KEY_PATTERN = "auth:one-time-token:%s";
     private final RedissonClient redissonClient;
     private Clock clock = Clock.systemUTC();
 
