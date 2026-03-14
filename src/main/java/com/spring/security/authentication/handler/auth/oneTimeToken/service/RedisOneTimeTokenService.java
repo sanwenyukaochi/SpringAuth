@@ -1,8 +1,7 @@
-package com.spring.security.authentication.handler.auth.oneTimeToken.service.impl;
+package com.spring.security.authentication.handler.auth.oneTimeToken.service;
 
 import com.spring.security.authentication.handler.auth.oneTimeToken.OneTimeTokenAuthenticationToken;
 import com.spring.security.authentication.handler.auth.oneTimeToken.dto.RedisOneTimeToken;
-import com.spring.security.authentication.handler.auth.oneTimeToken.service.OneTimeTokenService;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
@@ -19,13 +18,12 @@ import org.springframework.util.Assert;
 
 @Component
 @RequiredArgsConstructor
-public class RedisOneTimeTokenService implements OneTimeTokenService {
+public class RedisOneTimeTokenService {
 
     private static final String KEY_PATTERN = "auth:one-time-token:%s";
     private final RedissonClient redissonClient;
     private Clock clock = Clock.systemUTC();
 
-    @Override
     public @NullMarked OneTimeToken generate(GenerateOneTimeTokenRequest request) {
         String token = UUID.randomUUID().toString();
         Instant expiresAt = this.clock.instant().plus(request.getExpiresIn());
@@ -41,7 +39,6 @@ public class RedisOneTimeTokenService implements OneTimeTokenService {
         return ott;
     }
 
-    @Override
     public @Nullable OneTimeToken consume(OneTimeTokenAuthenticationToken authenticationToken) {
         String token = authenticationToken.getToken();
         RedisOneTimeToken redisOneTimeToken = (RedisOneTimeToken) redissonClient
