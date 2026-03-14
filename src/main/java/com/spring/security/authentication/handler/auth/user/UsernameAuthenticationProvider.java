@@ -80,8 +80,8 @@ public class UsernameAuthenticationProvider implements AuthenticationProvider {
                 loadedUser.getAccountNonLocked(),
                 loadedUser.getCredentialsNonExpired(),
                 loadedUser.getEnabled(),
-                loadedUser.getTwoFactorSecret(),
-                loadedUser.getTwoFactorEnabled());
+                loadedUser.getMfaSecret(),
+                loadedUser.getMfaEnabled());
     }
 
     protected void additionalAuthenticationChecks(

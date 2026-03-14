@@ -135,8 +135,8 @@ public class GitHubOAuth2LoginAuthenticationProvider implements AuthenticationPr
                 user != null ? user.getAccountNonExpired() : null,
                 user != null ? user.getCredentialsNonExpired() : null,
                 user != null ? user.getEnabled() : null,
-                user != null ? user.getTwoFactorSecret() : null,
-                user != null ? user.getTwoFactorEnabled() : null);
+                user != null ? user.getMfaSecret() : null,
+                user != null ? user.getMfaEnabled() : null);
 
         // 认证通过，使用 Authenticated 为 true 的构造函数
         GitHubOAuth2LoginAuthenticationToken result = new GitHubOAuth2LoginAuthenticationToken(
