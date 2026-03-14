@@ -120,7 +120,7 @@ tasks.named("compileJava") {
 }
 
 checkstyle {
-    toolVersion = "10.14.2"
+    toolVersion = "13.3.0"
     configFile = file("config/checkstyle/checkstyle.xml")
     configProperties =
         mapOf(
