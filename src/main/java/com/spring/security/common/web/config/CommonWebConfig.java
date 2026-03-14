@@ -1,17 +1,10 @@
 package com.spring.security.common.web.config;
 
 import com.spring.security.domain.model.dto.PagedModel;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.util.Optional;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.web.client.RestTemplate;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.JacksonModule;
@@ -21,26 +14,7 @@ import tools.jackson.databind.module.SimpleModule;
 
 @Configuration
 @EnableJpaAuditing
-@EnableConfigurationProperties(CommonWebConfig.ProxyProperties.class)
 public class CommonWebConfig {
-
-    @Bean
-    public RestTemplate restTemplate(ProxyProperties proxyProperties) {
-
-        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(5000);
-        factory.setReadTimeout(8000);
-
-        Optional.of(proxyProperties)
-                .filter(ProxyProperties::enabled)
-                .ifPresent(
-                        p -> factory.setProxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(p.host(), p.port()))));
-
-        return new RestTemplate(factory);
-    }
-
-    @ConfigurationProperties(prefix = "spring.proxy")
-    public record ProxyProperties(boolean enabled, String host, int port) {}
 
     @Bean
     public JacksonModule jacksonModule() {
