@@ -1,7 +1,7 @@
 package com.spring.security.authentication.handler.auth.oneTimeToken;
 
 import com.spring.security.authentication.handler.auth.UserLoginInfo;
-import com.spring.security.authentication.handler.auth.oneTimeToken.service.impl.RedisOneTimeTokenService;
+import com.spring.security.authentication.handler.auth.oneTimeToken.service.RedisOneTimeTokenService;
 import com.spring.security.common.web.enums.BaseCode;
 import com.spring.security.common.web.exception.BaseException;
 import com.spring.security.domain.model.entity.User;

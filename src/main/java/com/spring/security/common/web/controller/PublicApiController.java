@@ -1,6 +1,6 @@
 package com.spring.security.common.web.controller;
 
-import com.spring.security.authentication.handler.auth.oneTimeToken.service.impl.RedisOneTimeTokenService;
+import com.spring.security.authentication.handler.auth.oneTimeToken.service.RedisOneTimeTokenService;
 import com.spring.security.domain.model.dto.Result;
 import com.spring.security.domain.model.entity.User;
 import com.spring.security.domain.repository.UserRepository;
