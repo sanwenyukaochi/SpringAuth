@@ -1,6 +1,9 @@
 package com.spring.security.authentication.handler.auth.message;
 
 import com.spring.security.authentication.handler.auth.UserLoginInfo;
+import com.spring.security.common.web.service.RedisVerificationCodeService;
+import com.spring.security.common.web.service.RedisVerificationCodeService.VerificationChannel;
+import com.spring.security.common.web.service.RedisVerificationCodeService.VerificationPurpose;
 import com.spring.security.common.web.enums.BaseCode;
 import com.spring.security.common.web.exception.BaseException;
 import com.spring.security.domain.model.entity.User;
@@ -28,6 +31,7 @@ import org.springframework.util.Assert;
 public class SmsAuthenticationProvider implements AuthenticationProvider {
     protected MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
     private final UserRepository userRepository;
+    private final RedisVerificationCodeService redisVerificationCodeService;
 
     @Override
     public Authentication authenticate(@NonNull Authentication authentication) throws AuthenticationException {
@@ -83,9 +87,11 @@ public class SmsAuthenticationProvider implements AuthenticationProvider {
 
     protected void additionalAuthenticationChecks(UserLoginInfo userLoginInfo, SmsAuthenticationToken authentication)
             throws AuthenticationException {
-        String presentedSmsCode = authentication.getSmsCode();
-        if (!presentedSmsCode.equals("000000") || userLoginInfo == null) {
-            log.debug("身份验证失败，因为验证码与存储的值不匹配");
+        String phone = authentication.getPhone();
+        String inputCode = authentication.getSmsCode();
+        if (redisVerificationCodeService.verifyAndConsume(
+                phone, VerificationChannel.SMS, VerificationPurpose.LOGIN, inputCode)) {
+            log.debug("身份验证失败，因为短信验证码无效、已使用或已过期");
             throw new BadCredentialsException(
                     this.messages.getMessage("smsAuthenticationProvider.badCredentials", "Bad credentials"));
         }
