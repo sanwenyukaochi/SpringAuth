@@ -26,4 +26,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "security"
+rootProject.name = "spring-auth"
+include("project-security")
