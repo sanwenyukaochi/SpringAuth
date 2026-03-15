@@ -1,6 +1,6 @@
 package com.spring.security.authentication.handler.auth.github.dto;
 
-import com.spring.security.domain.model.entity.UserIdentity;
+import com.spring.security.web.model.entity.UserIdentity;
 
 public record GitHubOAuth2Meta(
         UserIdentity.Provider provider,

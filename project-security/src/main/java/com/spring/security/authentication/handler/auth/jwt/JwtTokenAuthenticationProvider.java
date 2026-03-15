@@ -3,7 +3,7 @@ package com.spring.security.authentication.handler.auth.jwt;
 import com.spring.security.authentication.handler.auth.UserLoginInfo;
 import com.spring.security.authentication.handler.auth.jwt.dto.JwtTokenUserLoginInfo;
 import com.spring.security.authentication.handler.auth.jwt.service.JwtService;
-import com.spring.security.common.cache.constant.RedisCache;
+import com.spring.security.web.constant.RedisCache;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;

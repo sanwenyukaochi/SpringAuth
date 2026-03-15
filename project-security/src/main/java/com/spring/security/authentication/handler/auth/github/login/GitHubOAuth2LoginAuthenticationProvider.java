@@ -6,10 +6,10 @@ import com.spring.security.authentication.handler.auth.github.authentication.Git
 import com.spring.security.authentication.handler.auth.github.dto.GitHubOAuth2Meta;
 import com.spring.security.authentication.handler.auth.github.service.GitHubOAuth2UserService;
 import com.spring.security.authentication.handler.authorization.Authority;
-import com.spring.security.domain.model.entity.User;
-import com.spring.security.domain.model.entity.UserIdentity;
-import com.spring.security.domain.repository.UserIdentityRepository;
-import com.spring.security.domain.repository.UserRepository;
+import com.spring.security.web.model.entity.User;
+import com.spring.security.web.model.entity.UserIdentity;
+import com.spring.security.web.repository.UserIdentityRepository;
+import com.spring.security.web.repository.UserRepository;
 import java.util.*;
 import lombok.Getter;
 import lombok.Setter;
