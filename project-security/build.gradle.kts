@@ -1,21 +1,9 @@
-plugins {
-    java
-    id("org.springframework.boot") version "4.0.3"
-    id("io.spring.dependency-management") version "1.1.7"
-    id("com.gorylenko.gradle-git-properties") version "2.5.7"
-    id("com.diffplug.spotless") version "8.3.0"
-    id("checkstyle")
-}
-group = "com.spring.security"
-version = "0.0.1-SNAPSHOT"
-description = "project-security"
-
-val springdocVersion by extra("3.0.2")
-val commonsLangVersion by extra("3.20.0")
-val jjwtVersion by extra("0.13.0")
-val postgresqlVersion by extra("42.7.10")
-val jspecifyVersion by extra("1.0.0")
-val redissonVersion by extra("4.3.0")
+val springdocVersion: String by rootProject.extra
+val commonsLangVersion: String by rootProject.extra
+val jjwtVersion: String by rootProject.extra
+val postgresqlVersion: String by rootProject.extra
+val jspecifyVersion: String by rootProject.extra
+val redissonVersion: String by rootProject.extra
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -43,96 +31,4 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-}
-
-springBoot {
-    buildInfo()
-}
-
-gitProperties {
-    failOnNoGitDirectory = false
-    keys =
-        listOf(
-            "git.branch",
-            "git.build.host",
-            "git.build.user.email",
-            "git.build.user.name",
-            "git.build.version",
-            "git.closest.tag.commit.count",
-            "git.closest.tag.name",
-            "git.commit.id",
-            "git.commit.id.abbrev",
-            "git.commit.id.describe",
-            "git.commit.message.full",
-            "git.commit.message.short",
-            "git.commit.time",
-            "git.commit.user.email",
-            "git.commit.user.name",
-            "git.dirty",
-            "git.remote.origin.url",
-            "git.tags",
-            "git.total.commit.count",
-        )
-}
-
-spotless {
-    encoding("UTF-8")
-    java {
-        palantirJavaFormat()
-        importOrder()
-        removeUnusedImports()
-        formatAnnotations()
-        trimTrailingWhitespace()
-        endWithNewline()
-        toggleOffOn()
-    }
-
-    kotlin {
-        ktlint()
-    }
-
-    kotlinGradle {
-        ktlint()
-    }
-
-    format("misc") {
-        target(
-            "**/*.md",
-            "**/*.properties",
-            "**/*.yml",
-            "**/*.yaml",
-            "**/*.sh",
-            "**/.gitignore",
-        )
-        targetExclude("**/build/**", "**/build-*/**")
-        trimTrailingWhitespace()
-        leadingTabsToSpaces(2)
-        endWithNewline()
-    }
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform()
-}
-
-tasks.named("compileJava") {
-    dependsOn(tasks.named("spotlessCheck"))
-}
-
-checkstyle {
-    toolVersion = "13.3.0"
-    configFile = file("config/checkstyle/checkstyle.xml")
-    configProperties =
-        mapOf(
-            "baseDir" to rootDir,
-        )
-    isIgnoreFailures = true
-}
-
-tasks.withType<Checkstyle>().configureEach {
-    val checkstyleConfigFile = file("config/checkstyle/checkstyle.xml")
-    enabled = checkstyleConfigFile.exists()
-    if (!enabled) {
-        logger.warn("Checkstyle config file not found at {}, skipping checkstyle tasks", checkstyleConfigFile.absolutePath)
-    }
 }
