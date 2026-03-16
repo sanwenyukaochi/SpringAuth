@@ -1,9 +1,9 @@
-package com.spring.security.common.web.service;
+package com.spring.security.web.service;
 
-import com.spring.security.common.web.enums.BaseCode;
-import com.spring.security.common.web.exception.BaseException;
 import com.spring.security.domain.model.entity.UserIdentity;
 import com.spring.security.domain.repository.UserIdentityRepository;
+import com.spring.security.web.enums.BaseCode;
+import com.spring.security.web.exception.BaseException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

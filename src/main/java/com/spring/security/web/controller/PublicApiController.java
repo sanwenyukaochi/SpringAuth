@@ -1,4 +1,4 @@
-package com.spring.security.common.web.controller;
+package com.spring.security.web.controller;
 
 import com.spring.security.authentication.handler.auth.oneTimeToken.service.RedisOneTimeTokenService;
 import com.spring.security.domain.model.dto.Result;

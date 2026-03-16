@@ -1,7 +1,7 @@
-package com.spring.security.common.web.exception;
+package com.spring.security.web.exception;
 
-import com.spring.security.common.web.enums.BaseCode;
 import com.spring.security.domain.model.dto.Result;
+import com.spring.security.web.enums.BaseCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
