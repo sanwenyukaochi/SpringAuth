@@ -5,11 +5,6 @@ import com.spring.security.authentication.handler.auth.LoginSuccessHandler;
 import com.spring.security.authentication.handler.auth.def.DefaultApiAuthenticationFilter;
 import com.spring.security.authentication.handler.auth.email.EmailAuthenticationFilter;
 import com.spring.security.authentication.handler.auth.email.EmailAuthenticationProvider;
-import com.spring.security.authentication.handler.auth.github.GitHubOAuth2AuthorizationRedirectFilter;
-import com.spring.security.authentication.handler.auth.github.authentication.GitHubOAuth2AuthorizationCodeAuthenticationProvider;
-import com.spring.security.authentication.handler.auth.github.login.GitHubOAuth2LoginAuthenticationFilter;
-import com.spring.security.authentication.handler.auth.github.login.GitHubOAuth2LoginAuthenticationProvider;
-import com.spring.security.authentication.handler.auth.github.repository.GitHubHttpSessionOAuth2AuthorizationRequestRepository;
 import com.spring.security.authentication.handler.auth.jwt.JwtTokenAuthenticationFilter;
 import com.spring.security.authentication.handler.auth.jwt.JwtTokenAuthenticationProvider;
 import com.spring.security.authentication.handler.auth.jwt.service.JwtService;
@@ -35,7 +30,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
@@ -50,9 +44,6 @@ public class CustomSecurityConfig {
     private final CustomAuthenticationExceptionHandler authenticationExceptionHandler;
     private final CustomAuthorizationExceptionHandler authorizationExceptionHandler;
     private final CustomSecurityExceptionHandler globalSpringSecurityExceptionHandler;
-    private final ClientRegistrationRepository clientRegistrationRepository;
-    private final GitHubHttpSessionOAuth2AuthorizationRequestRepository
-            gitHubHttpSessionOAuth2AuthorizationRequestRepository;
     /**
      * 禁用不必要的默认filter，处理异常响应内容
      */
@@ -112,8 +103,6 @@ public class CustomSecurityConfig {
             SmsAuthenticationProvider smsAuthenticationProvider,
             EmailAuthenticationProvider emailAuthenticationProvider,
             OneTimeTokenAuthenticationProvider oneTimeTokenAuthenticationProvider,
-            GitHubOAuth2AuthorizationCodeAuthenticationProvider gitHubOAuth2AuthorizationCodeAuthenticationProvider,
-            GitHubOAuth2LoginAuthenticationProvider gitHubOAuth2LoginAuthenticationProvider,
             JsonMapper jsonMapper) {
         commonHttpSetting(httpSecurity);
         // 使用securityMatcher限定当前配置作用的路径
@@ -152,25 +141,6 @@ public class CustomSecurityConfig {
                 loginFailHandler,
                 jsonMapper);
         httpSecurity.addFilterBefore(oneTimeTokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
-        // GitHub OAuth2 授权请求过滤器 - 负责跳转到GitHub登录页
-        GitHubOAuth2AuthorizationRedirectFilter gitHubOAuth2AuthorizationRedirectFilter =
-                new GitHubOAuth2AuthorizationRedirectFilter(
-                        clientRegistrationRepository, gitHubHttpSessionOAuth2AuthorizationRequestRepository);
-        httpSecurity.addFilterBefore(
-                gitHubOAuth2AuthorizationRedirectFilter, UsernamePasswordAuthenticationFilter.class);
-
-        // GitHub OAuth2 回调认证过滤器 - 处理GitHub回调并完成登录
-        GitHubOAuth2LoginAuthenticationFilter gitHubOAuth2LoginAuthenticationFilter =
-                new GitHubOAuth2LoginAuthenticationFilter(
-                        clientRegistrationRepository,
-                        gitHubHttpSessionOAuth2AuthorizationRequestRepository,
-                        new ProviderManager(List.of(
-                                gitHubOAuth2LoginAuthenticationProvider,
-                                gitHubOAuth2AuthorizationCodeAuthenticationProvider)),
-                        loginSuccessHandler,
-                        loginFailHandler);
-        httpSecurity.addFilterBefore(gitHubOAuth2LoginAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return httpSecurity.build();
     }
