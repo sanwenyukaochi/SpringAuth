@@ -1,4 +1,4 @@
-package com.spring.security.common.web.config;
+package com.spring.security.web.config;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.ExternalDocumentation;

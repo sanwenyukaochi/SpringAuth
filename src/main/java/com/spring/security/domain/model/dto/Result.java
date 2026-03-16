@@ -1,6 +1,6 @@
 package com.spring.security.domain.model.dto;
 
-import com.spring.security.common.web.enums.BaseCode;
+import com.spring.security.web.enums.BaseCode;
 
 public record Result<T>(String code, String message, T data) {
 

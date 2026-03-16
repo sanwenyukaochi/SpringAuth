@@ -2,10 +2,10 @@ package com.spring.security.authentication.handler.auth.user;
 
 import com.spring.security.authentication.handler.auth.UserLoginInfo;
 import com.spring.security.authentication.handler.authorization.Authority;
-import com.spring.security.common.web.enums.BaseCode;
-import com.spring.security.common.web.exception.BaseException;
 import com.spring.security.domain.model.entity.User;
 import com.spring.security.domain.repository.UserRepository;
+import com.spring.security.web.enums.BaseCode;
+import com.spring.security.web.exception.BaseException;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;

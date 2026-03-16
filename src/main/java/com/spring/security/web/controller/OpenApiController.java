@@ -1,4 +1,4 @@
-package com.spring.security.common.web.controller;
+package com.spring.security.web.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

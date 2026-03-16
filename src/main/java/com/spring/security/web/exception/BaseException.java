@@ -1,6 +1,6 @@
-package com.spring.security.common.web.exception;
+package com.spring.security.web.exception;
 
-import com.spring.security.common.web.enums.BaseCode;
+import com.spring.security.web.enums.BaseCode;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 

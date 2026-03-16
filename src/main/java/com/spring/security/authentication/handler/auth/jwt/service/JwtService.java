@@ -2,8 +2,8 @@ package com.spring.security.authentication.handler.auth.jwt.service;
 
 import com.spring.security.authentication.handler.auth.jwt.constant.JWTConstants;
 import com.spring.security.authentication.handler.auth.jwt.dto.JwtTokenUserLoginInfo;
-import com.spring.security.common.web.enums.BaseCode;
-import com.spring.security.common.web.exception.BaseException;
+import com.spring.security.web.enums.BaseCode;
+import com.spring.security.web.exception.BaseException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;

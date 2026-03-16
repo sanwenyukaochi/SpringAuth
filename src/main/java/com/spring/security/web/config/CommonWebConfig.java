@@ -1,4 +1,4 @@
-package com.spring.security.common.web.config;
+package com.spring.security.web.config;
 
 import com.spring.security.domain.model.dto.PagedModel;
 import org.springframework.context.annotation.Bean;
