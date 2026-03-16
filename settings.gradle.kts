@@ -29,3 +29,4 @@ dependencyResolutionManagement {
 rootProject.name = "spring-auth"
 include("project-authorization-server")
 include("project-security")
+include("project-oauth-client")
