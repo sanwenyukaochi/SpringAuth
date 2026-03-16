@@ -1,6 +1,6 @@
-package com.spring.security.common.web.enums;
+package com.spring.security.web.enums;
 
-import com.spring.security.common.web.exception.BaseException;
+import com.spring.security.web.exception.BaseException;
 import java.util.Arrays;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

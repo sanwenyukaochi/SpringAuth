@@ -1,4 +1,4 @@
-package com.spring.security.common.cache.constant;
+package com.spring.security.web.constant;
 
 public final class RedisCache {
     public static final String USER_INFO = "userInfo:%s";

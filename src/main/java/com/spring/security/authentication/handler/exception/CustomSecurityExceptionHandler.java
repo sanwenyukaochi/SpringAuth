@@ -1,8 +1,8 @@
 package com.spring.security.authentication.handler.exception;
 
-import com.spring.security.common.web.enums.BaseCode;
-import com.spring.security.common.web.exception.BaseException;
 import com.spring.security.domain.model.dto.Result;
+import com.spring.security.web.enums.BaseCode;
+import com.spring.security.web.exception.BaseException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
