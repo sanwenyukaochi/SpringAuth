@@ -1,3 +1,7 @@
+import com.diffplug.gradle.spotless.SpotlessExtension
+import com.gorylenko.GitPropertiesPluginExtension
+import org.springframework.boot.gradle.dsl.SpringBootExtension
+
 plugins {
     java
     id("org.springframework.boot") version "4.0.4"
@@ -45,69 +49,75 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
-springBoot {
-    buildInfo()
+pluginManager.withPlugin("org.springframework.boot") {
+    extensions.configure<SpringBootExtension> {
+        buildInfo()
+    }
 }
 
-gitProperties {
-    failOnNoGitDirectory = false
-    keys =
-        listOf(
-            "git.branch",
-            "git.build.host",
-            "git.build.user.email",
-            "git.build.user.name",
-            "git.build.version",
-            "git.closest.tag.commit.count",
-            "git.closest.tag.name",
-            "git.commit.id",
-            "git.commit.id.abbrev",
-            "git.commit.id.describe",
-            "git.commit.message.full",
-            "git.commit.message.short",
-            "git.commit.time",
-            "git.commit.user.email",
-            "git.commit.user.name",
-            "git.dirty",
-            "git.remote.origin.url",
-            "git.tags",
-            "git.total.commit.count",
-        )
+pluginManager.withPlugin("com.gorylenko.gradle-git-properties") {
+    extensions.configure<GitPropertiesPluginExtension> {
+        failOnNoGitDirectory = false
+        keys =
+            listOf(
+                "git.branch",
+                "git.build.host",
+                "git.build.user.email",
+                "git.build.user.name",
+                "git.build.version",
+                "git.closest.tag.commit.count",
+                "git.closest.tag.name",
+                "git.commit.id",
+                "git.commit.id.abbrev",
+                "git.commit.id.describe",
+                "git.commit.message.full",
+                "git.commit.message.short",
+                "git.commit.time",
+                "git.commit.user.email",
+                "git.commit.user.name",
+                "git.dirty",
+                "git.remote.origin.url",
+                "git.tags",
+                "git.total.commit.count",
+            )
+    }
 }
 
-spotless {
-    encoding("UTF-8")
-    java {
-        palantirJavaFormat()
-        importOrder()
-        removeUnusedImports()
-        formatAnnotations()
-        trimTrailingWhitespace()
-        endWithNewline()
-        toggleOffOn()
-    }
+pluginManager.withPlugin("com.diffplug.spotless") {
+    extensions.configure<SpotlessExtension> {
+        encoding("UTF-8")
+        java {
+            palantirJavaFormat()
+            importOrder()
+            removeUnusedImports()
+            formatAnnotations()
+            trimTrailingWhitespace()
+            endWithNewline()
+            toggleOffOn()
+        }
 
-    kotlin {
-        ktlint()
-    }
+        kotlin {
+            ktlint()
+        }
 
-    kotlinGradle {
-        ktlint()
-    }
+        kotlinGradle {
+            ktlint()
+        }
 
-    format("misc") {
-        target(
-            "**/*.md",
-            "**/*.properties",
-            "**/*.yml",
-            "**/*.yaml",
-            "**/*.sh",
-            "**/.gitignore",
-        )
-        targetExclude("**/build/**", "**/build-*/**")
-        trimTrailingWhitespace()
-        leadingTabsToSpaces(2)
-        endWithNewline()
+        format("misc") {
+            target(
+                "**/*.md",
+                "**/*.properties",
+                "**/*.yml",
+                "**/*.yaml",
+                "**/*.sh",
+                "**/.gitignore",
+            )
+            targetExclude("**/build/**", "**/build-*/**")
+            trimTrailingWhitespace()
+            leadingTabsToSpaces(2)
+            endWithNewline()
+        }
     }
 }
 
