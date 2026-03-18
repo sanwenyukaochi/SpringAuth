@@ -47,36 +47,15 @@ public class OneTimeTokenAuthenticationProvider implements AuthenticationProvide
         OneTimeTokenAuthenticationToken otpAuthenticationToken = (OneTimeTokenAuthenticationToken) authentication;
         // 获取用户提交的用户名
         String token = otpAuthenticationToken.getToken() == null ? "NONE_PROVIDED" : otpAuthenticationToken.getToken();
-        // 查询用户信息
-        OneTimeToken oneTimeToken = retrieveUser(token, (OneTimeTokenAuthenticationToken) authentication);
         // 验证用户信息
-        UserLoginInfo userLoginInfo = additionalAuthenticationChecks(
-                oneTimeToken.getUsername(), (OneTimeTokenAuthenticationToken) authentication);
-        // 构造成功结果
-        return createSuccessAuthentication(otpAuthenticationToken, userLoginInfo);
-    }
-
-    @Override
-    public boolean supports(@NonNull Class<?> authentication) {
-        return OneTimeTokenAuthenticationToken.class.isAssignableFrom(authentication);
-    }
-
-    protected Authentication createSuccessAuthentication(Authentication authentication, UserLoginInfo userLoginInfo) {
-        // 认证通过，使用 Authenticated 为 true 的构造函数
-        Collection<GrantedAuthority> authorities = new HashSet<>();
-        authorities.add(FactorGrantedAuthority.fromAuthority(AUTHORITY));
-        OneTimeTokenAuthenticationToken result =
-                OneTimeTokenAuthenticationToken.authenticated(userLoginInfo, authorities);
-        // 必须转化成Map
-        result.setDetails(authentication.getDetails());
-        log.debug("用户名认证成功，用户: {}", userLoginInfo.getUsername());
-        return result;
-    }
-
-    protected UserLoginInfo additionalAuthenticationChecks(
-            String username, OneTimeTokenAuthenticationToken authentication) throws AuthenticationException {
-        User loadedUser =
-                userRepository.findByUsername(username).orElseThrow(() -> new BaseException(BaseCode.USER_NOT_FOUND));
+        OneTimeToken oneTimeToken = this.redisOneTimeTokenService.consume(otpAuthenticationToken);
+        Optional.ofNullable(oneTimeToken)
+                .orElseThrow(() -> new BadCredentialsException(
+                        this.messages.getMessage("jwtTokenAuthenticationProvider.sessionExpired", "错误的凭证")));
+        // 查询用户信息
+        User loadedUser = userRepository
+                .findByUsername(oneTimeToken.getUsername())
+                .orElseThrow(() -> new BaseException(BaseCode.USER_NOT_FOUND));
         Collection<GrantedAuthority> authorities = userRoleRepository.findByUser(loadedUser).stream()
                 .map(UserRole::getRole)
                 .map(Role::getCode)
@@ -84,7 +63,7 @@ public class OneTimeTokenAuthenticationProvider implements AuthenticationProvide
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         authorities.add(FactorGrantedAuthority.fromAuthority(AUTHORITY));
         log.debug("用户信息查询成功，用户: {}", loadedUser.getUsername());
-        return new UserLoginInfo(
+        UserLoginInfo userLoginInfo = new UserLoginInfo(
                 UUID.randomUUID().toString(),
                 loadedUser.getId(),
                 loadedUser.getUsername(),
@@ -98,14 +77,18 @@ public class OneTimeTokenAuthenticationProvider implements AuthenticationProvide
                 loadedUser.getMfaSecret(),
                 loadedUser.getMfaEnabled(),
                 authorities);
+        // 构造成功结果
+        // 认证通过，使用 Authenticated 为 true 的构造函数
+        OneTimeTokenAuthenticationToken result =
+                OneTimeTokenAuthenticationToken.authenticated(userLoginInfo, authorities);
+        // 必须转化成Map
+        result.setDetails(authentication.getDetails());
+        log.debug("用户名认证成功，用户: {}", userLoginInfo.getUsername());
+        return result;
     }
 
-    protected OneTimeToken retrieveUser(String token, OneTimeTokenAuthenticationToken authentication)
-            throws AuthenticationException {
-        OneTimeToken consumed = this.redisOneTimeTokenService.consume(authentication);
-        Optional.ofNullable(consumed)
-                .orElseThrow(() -> new BadCredentialsException(
-                        this.messages.getMessage("jwtTokenAuthenticationProvider.sessionExpired", "错误的凭证")));
-        return consumed;
+    @Override
+    public boolean supports(@NonNull Class<?> authentication) {
+        return OneTimeTokenAuthenticationToken.class.isAssignableFrom(authentication);
     }
 }
