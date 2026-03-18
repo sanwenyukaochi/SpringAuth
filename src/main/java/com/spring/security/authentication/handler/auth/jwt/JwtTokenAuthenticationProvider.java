@@ -45,21 +45,18 @@ public class JwtTokenAuthenticationProvider implements AuthenticationProvider {
                 ? "NONE_PROVIDED"
                 : jwtTokenAuthenticationToken.getJwtToken());
         // 查询用户信息
-        JwtTokenUserLoginInfo jwtTokenUserLoginInfo =
-                retrieveUser(jwtToken, (JwtTokenAuthenticationToken) authentication);
+        JwtTokenUserLoginInfo jwtTokenUserLoginInfo = jwtService.validateJwtToken(jwtToken);
+        Optional.ofNullable(jwtTokenUserLoginInfo)
+                .orElseThrow(() -> new BadCredentialsException(
+                        this.messages.getMessage("jwtTokenAuthenticationProvider.sessionExpired", "错误的凭证")));
         // 验证用户信息
-        UserLoginInfo userLoginInfo =
-                additionalAuthenticationChecks(jwtTokenUserLoginInfo.username(), jwtTokenAuthenticationToken);
+        UserLoginInfo userLoginInfo = (UserLoginInfo) redissonClient
+                .getBucket(
+                        RedisCache.USER_INFO.formatted(jwtTokenUserLoginInfo.username()),
+                        new TypedJsonJackson3Codec(UserLoginInfo.class))
+                .get();
+        log.debug("用户信息解析成功，用户: {}", userLoginInfo.getUsername());
         // 构造成功结果
-        return createSuccessAuthentication(jwtTokenAuthenticationToken, userLoginInfo);
-    }
-
-    @Override
-    public boolean supports(@NonNull Class<?> authentication) {
-        return JwtTokenAuthenticationToken.class.isAssignableFrom(authentication);
-    }
-
-    protected Authentication createSuccessAuthentication(Authentication authentication, UserLoginInfo userLoginInfo) {
         // 认证通过，使用 Authenticated 为 true 的构造函数
         JwtTokenAuthenticationToken result = JwtTokenAuthenticationToken.authenticated(userLoginInfo, List.of());
         // 必须转化成Map
@@ -68,21 +65,8 @@ public class JwtTokenAuthenticationProvider implements AuthenticationProvider {
         return result;
     }
 
-    protected UserLoginInfo additionalAuthenticationChecks(String username, JwtTokenAuthenticationToken authentication)
-            throws AuthenticationException {
-        UserLoginInfo loadedUser = (UserLoginInfo) redissonClient
-                .getBucket(RedisCache.USER_INFO.formatted(username), new TypedJsonJackson3Codec(UserLoginInfo.class))
-                .get();
-        log.debug("用户信息解析成功，用户: {}", loadedUser.getUsername());
-        return loadedUser;
-    }
-
-    protected JwtTokenUserLoginInfo retrieveUser(String jwtToken, JwtTokenAuthenticationToken authentication)
-            throws AuthenticationException {
-        JwtTokenUserLoginInfo jwtTokenUserLoginInfo = jwtService.validateJwtToken(jwtToken);
-        Optional.ofNullable(jwtTokenUserLoginInfo)
-                .orElseThrow(() -> new BadCredentialsException(
-                        this.messages.getMessage("jwtTokenAuthenticationProvider.sessionExpired", "错误的凭证")));
-        return jwtTokenUserLoginInfo;
+    @Override
+    public boolean supports(@NonNull Class<?> authentication) {
+        return JwtTokenAuthenticationToken.class.isAssignableFrom(authentication);
     }
 }

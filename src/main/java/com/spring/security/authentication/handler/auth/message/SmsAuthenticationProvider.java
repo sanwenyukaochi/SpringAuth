@@ -56,29 +56,6 @@ public class SmsAuthenticationProvider implements AuthenticationProvider {
         String phone =
                 (smsAuthenticationToken.getPhone() == null ? "NONE_PROVIDED" : smsAuthenticationToken.getPhone());
         // 查询用户信息
-        UserLoginInfo userLoginInfo = retrieveUser(phone, smsAuthenticationToken);
-        // 验证用户信息
-        additionalAuthenticationChecks(userLoginInfo, (SmsAuthenticationToken) authentication);
-        // 构造成功结果
-        return createSuccessAuthentication(smsAuthenticationToken, userLoginInfo);
-    }
-
-    @Override
-    public boolean supports(@NonNull Class<?> authentication) {
-        return SmsAuthenticationToken.class.isAssignableFrom(authentication);
-    }
-
-    protected Authentication createSuccessAuthentication(Authentication authentication, UserLoginInfo userLoginInfo) {
-        // 认证通过，使用 Authenticated 为 true 的构造函数
-        SmsAuthenticationToken result = SmsAuthenticationToken.authenticated(userLoginInfo, List.of());
-        // 必须转化成Map
-        result.setDetails(authentication);
-        log.debug("手机号认证成功，用户: {}", userLoginInfo.getUsername());
-        return result;
-    }
-
-    protected UserLoginInfo retrieveUser(String phone, SmsAuthenticationToken authentication)
-            throws AuthenticationException {
         User loadedUser =
                 userRepository.findByPhone(phone).orElseThrow(() -> new BaseException(BaseCode.USER_PHONE_NOT_FOUND));
         Collection<GrantedAuthority> authorities = userRoleRepository.findByUser(loadedUser).stream()
@@ -88,7 +65,7 @@ public class SmsAuthenticationProvider implements AuthenticationProvider {
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         authorities.add(FactorGrantedAuthority.fromAuthority(AUTHORITY));
         log.debug("用户信息查询成功，用户: {}", loadedUser.getUsername());
-        return new UserLoginInfo(
+        UserLoginInfo userLoginInfo = new UserLoginInfo(
                 UUID.randomUUID().toString(),
                 loadedUser.getId(),
                 loadedUser.getUsername(),
@@ -102,17 +79,26 @@ public class SmsAuthenticationProvider implements AuthenticationProvider {
                 loadedUser.getMfaSecret(),
                 loadedUser.getMfaEnabled(),
                 authorities);
-    }
-
-    protected void additionalAuthenticationChecks(UserLoginInfo userLoginInfo, SmsAuthenticationToken authentication)
-            throws AuthenticationException {
-        String phone = authentication.getPhone();
-        String inputCode = authentication.getSmsCode();
+        // 验证用户信息
+        String inputCode = smsAuthenticationToken.getSmsCode();
         if (redisVerificationCodeService.verifyAndConsume(
                 phone, VerificationChannel.SMS, VerificationPurpose.LOGIN, inputCode)) {
             log.debug("身份验证失败，因为短信验证码无效、已使用或已过期");
             throw new BadCredentialsException(
                     this.messages.getMessage("smsAuthenticationProvider.badCredentials", "Bad credentials"));
         }
+
+        // 构造成功结果
+        // 认证通过，使用 Authenticated 为 true 的构造函数
+        SmsAuthenticationToken result = SmsAuthenticationToken.authenticated(userLoginInfo, List.of());
+        // 必须转化成Map
+        result.setDetails(authentication);
+        log.debug("手机号认证成功，用户: {}", userLoginInfo.getUsername());
+        return result;
+    }
+
+    @Override
+    public boolean supports(@NonNull Class<?> authentication) {
+        return SmsAuthenticationToken.class.isAssignableFrom(authentication);
     }
 }
