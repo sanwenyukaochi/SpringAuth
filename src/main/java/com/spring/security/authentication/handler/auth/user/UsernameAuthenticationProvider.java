@@ -53,29 +53,6 @@ public class UsernameAuthenticationProvider implements AuthenticationProvider {
         // 获取用户提交的用户名
         String username = usernameAuthenticationToken.getUsername();
         // 查询用户信息
-        UserLoginInfo userLoginInfo = retrieveUser(username, usernameAuthenticationToken);
-        // 验证用户信息
-        additionalAuthenticationChecks(userLoginInfo, (UsernameAuthenticationToken) authentication);
-        // 构造成功结果
-        return createSuccessAuthentication(usernameAuthenticationToken, userLoginInfo);
-    }
-
-    @Override
-    public boolean supports(@NonNull Class<?> authentication) {
-        return UsernameAuthenticationToken.class.isAssignableFrom(authentication);
-    }
-
-    protected Authentication createSuccessAuthentication(Authentication authentication, UserLoginInfo userLoginInfo) {
-        // 认证通过，使用 Authenticated 为 true 的构造函数
-        UsernameAuthenticationToken result = UsernameAuthenticationToken.authenticated(userLoginInfo, List.of());
-        // 必须转化成Map
-        result.setDetails(authentication.getDetails());
-        log.debug("用户名认证成功，用户: {}", userLoginInfo.getUsername());
-        return result;
-    }
-
-    protected UserLoginInfo retrieveUser(String username, UsernameAuthenticationToken authentication)
-            throws AuthenticationException {
         User loadedUser =
                 userRepository.findByUsername(username).orElseThrow(() -> new BaseException(BaseCode.USER_NOT_FOUND));
         Collection<GrantedAuthority> authorities = userRoleRepository.findByUser(loadedUser).stream()
@@ -85,7 +62,7 @@ public class UsernameAuthenticationProvider implements AuthenticationProvider {
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         authorities.add(FactorGrantedAuthority.fromAuthority(AUTHORITY));
         log.debug("用户信息查询成功，用户: {}", loadedUser.getUsername());
-        return new UserLoginInfo(
+        UserLoginInfo userLoginInfo = new UserLoginInfo(
                 UUID.randomUUID().toString(),
                 loadedUser.getId(),
                 loadedUser.getUsername(),
@@ -99,15 +76,24 @@ public class UsernameAuthenticationProvider implements AuthenticationProvider {
                 loadedUser.getMfaSecret(),
                 loadedUser.getMfaEnabled(),
                 authorities);
-    }
-
-    protected void additionalAuthenticationChecks(
-            UserLoginInfo userLoginInfo, UsernameAuthenticationToken authentication) throws AuthenticationException {
-        String presentedPassword = authentication.getPassword();
+        // 验证用户信息
+        String presentedPassword = usernameAuthenticationToken.getPassword();
         if (!this.passwordEncoder.matches(presentedPassword, userLoginInfo.getPassword())) {
             log.debug("身份验证失败，因为密码与存储的值不匹配");
             throw new BadCredentialsException(
                     this.messages.getMessage("usernameAuthenticationProvider.badCredentials", "错误的凭证"));
         }
+        // 构造成功结果
+        // 认证通过，使用 Authenticated 为 true 的构造函数
+        UsernameAuthenticationToken result = UsernameAuthenticationToken.authenticated(userLoginInfo, List.of());
+        // 必须转化成Map
+        result.setDetails(authentication.getDetails());
+        log.debug("用户名认证成功，用户: {}", userLoginInfo.getUsername());
+        return result;
+    }
+
+    @Override
+    public boolean supports(@NonNull Class<?> authentication) {
+        return UsernameAuthenticationToken.class.isAssignableFrom(authentication);
     }
 }

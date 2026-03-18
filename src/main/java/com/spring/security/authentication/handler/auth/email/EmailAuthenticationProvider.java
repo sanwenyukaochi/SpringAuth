@@ -54,29 +54,6 @@ public class EmailAuthenticationProvider implements AuthenticationProvider {
         String email =
                 (emailAuthenticationToken.getEmail() == null ? "NONE_PROVIDED" : emailAuthenticationToken.getEmail());
         // 查询用户信息
-        UserLoginInfo userLoginInfo = retrieveUser(email, emailAuthenticationToken);
-        // 验证用户信息
-        additionalAuthenticationChecks(userLoginInfo, (EmailAuthenticationToken) authentication);
-        // 构造成功结果
-        return createSuccessAuthentication(emailAuthenticationToken, userLoginInfo);
-    }
-
-    @Override
-    public boolean supports(@NonNull Class<?> authentication) {
-        return EmailAuthenticationToken.class.isAssignableFrom(authentication);
-    }
-
-    protected Authentication createSuccessAuthentication(Authentication authentication, UserLoginInfo userLoginInfo) {
-        // 认证通过，使用 Authenticated 为 true 的构造函数
-        EmailAuthenticationToken result = EmailAuthenticationToken.authenticated(userLoginInfo, List.of());
-        // 必须转化成Map
-        result.setDetails(authentication.getDetails());
-        log.debug("邮箱认证成功，用户: {}", userLoginInfo.getUsername());
-        return result;
-    }
-
-    protected UserLoginInfo retrieveUser(String email, EmailAuthenticationToken authentication)
-            throws AuthenticationException {
         User loadedUser =
                 userRepository.findByEmail(email).orElseThrow(() -> new BaseException(BaseCode.USER_EMAIL_NOT_FOUND));
         Collection<GrantedAuthority> authorities = userRoleRepository.findByUser(loadedUser).stream()
@@ -86,7 +63,7 @@ public class EmailAuthenticationProvider implements AuthenticationProvider {
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         authorities.add(FactorGrantedAuthority.fromAuthority(AUTHORITY));
         log.debug("用户信息查询成功，用户: {}", loadedUser.getUsername());
-        return new UserLoginInfo(
+        UserLoginInfo userLoginInfo = new UserLoginInfo(
                 UUID.randomUUID().toString(),
                 loadedUser.getId(),
                 loadedUser.getUsername(),
@@ -100,15 +77,24 @@ public class EmailAuthenticationProvider implements AuthenticationProvider {
                 loadedUser.getMfaSecret(),
                 loadedUser.getMfaEnabled(),
                 authorities);
-    }
-
-    protected void additionalAuthenticationChecks(UserLoginInfo userLoginInfo, EmailAuthenticationToken authentication)
-            throws AuthenticationException {
-        String presentedPassword = authentication.getPassword();
+        // 验证用户信息
+        String presentedPassword = emailAuthenticationToken.getPassword();
         if (!this.passwordEncoder.matches(presentedPassword, userLoginInfo.getPassword())) {
             log.debug("身份验证失败，因为验证码与存储的值不匹配");
             throw new BadCredentialsException(
                     this.messages.getMessage("emailAuthenticationProvider.badCredentials", "错误的凭证"));
         }
+        // 构造成功结果
+        // 认证通过，使用 Authenticated 为 true 的构造函数
+        EmailAuthenticationToken result = EmailAuthenticationToken.authenticated(userLoginInfo, List.of());
+        // 必须转化成Map
+        result.setDetails(authentication.getDetails());
+        log.debug("邮箱认证成功，用户: {}", userLoginInfo.getUsername());
+        return result;
+    }
+
+    @Override
+    public boolean supports(@NonNull Class<?> authentication) {
+        return EmailAuthenticationToken.class.isAssignableFrom(authentication);
     }
 }
