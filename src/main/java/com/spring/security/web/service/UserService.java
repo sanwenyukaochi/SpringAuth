@@ -118,4 +118,27 @@ public class UserService {
                 loadedUser.getMfaEnabled(),
                 authorities);
     }
+
+    public UserLoginInfo loadUserByPhone(String phone) {
+        User loadedUser = getUserByPhone(phone);
+        Collection<GrantedAuthority> authorities = userRoleRepository.findByUser(loadedUser).stream()
+                .map(UserRole::getRole)
+                .map(Role::getCode)
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+        return new UserLoginInfo(
+                UUID.randomUUID().toString(),
+                loadedUser.getId(),
+                loadedUser.getUsername(),
+                loadedUser.getPassword(),
+                loadedUser.getPhone(),
+                loadedUser.getEmail(),
+                loadedUser.getAccountNonLocked(),
+                loadedUser.getAccountNonExpired(),
+                loadedUser.getCredentialsNonExpired(),
+                loadedUser.getEnabled(),
+                loadedUser.getMfaSecret(),
+                loadedUser.getMfaEnabled(),
+                authorities);
+    }
 }
