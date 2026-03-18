@@ -3,11 +3,15 @@ package com.spring.security.authentication.handler.auth.oneTimeToken;
 import com.spring.security.authentication.handler.auth.UserLoginInfo;
 import com.spring.security.authentication.handler.auth.oneTimeToken.service.RedisOneTimeTokenService;
 import com.spring.security.authentication.handler.authorization.Authority;
+import com.spring.security.domain.model.entity.Role;
 import com.spring.security.domain.model.entity.User;
+import com.spring.security.domain.model.entity.UserRole;
 import com.spring.security.domain.repository.UserRepository;
+import com.spring.security.domain.repository.UserRoleRepository;
 import com.spring.security.web.enums.BaseCode;
 import com.spring.security.web.exception.BaseException;
 import java.util.*;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -20,6 +24,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.SpringSecurityMessageSource;
 import org.springframework.security.core.authority.FactorGrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
@@ -28,9 +33,10 @@ import org.springframework.util.Assert;
 @RequiredArgsConstructor
 public class OneTimeTokenAuthenticationProvider implements AuthenticationProvider {
     protected MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
-    private static final String AUTHORITY = Authority.OTT_AUTHORITY;
     private final UserRepository userRepository;
     private final RedisOneTimeTokenService redisOneTimeTokenService;
+    private final UserRoleRepository userRoleRepository;
+    private static final String AUTHORITY = Authority.OTT_AUTHORITY;
 
     @Override
     public Authentication authenticate(@NonNull Authentication authentication) throws AuthenticationException {
@@ -71,7 +77,11 @@ public class OneTimeTokenAuthenticationProvider implements AuthenticationProvide
             String username, OneTimeTokenAuthenticationToken authentication) throws AuthenticationException {
         User loadedUser =
                 userRepository.findByUsername(username).orElseThrow(() -> new BaseException(BaseCode.USER_NOT_FOUND));
-        Collection<GrantedAuthority> authorities = new LinkedHashSet<>();
+        Collection<GrantedAuthority> authorities = userRoleRepository.findByUser(loadedUser).stream()
+                .map(UserRole::getRole)
+                .map(Role::getCode)
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
         authorities.add(FactorGrantedAuthority.fromAuthority(AUTHORITY));
         log.debug("用户信息查询成功，用户: {}", loadedUser.getUsername());
         return new UserLoginInfo(
@@ -82,7 +92,7 @@ public class OneTimeTokenAuthenticationProvider implements AuthenticationProvide
                 loadedUser.getPhone(),
                 loadedUser.getEmail(),
                 loadedUser.getAccountNonLocked(),
-                loadedUser.getAccountNonLocked(),
+                loadedUser.getAccountNonExpired(),
                 loadedUser.getCredentialsNonExpired(),
                 loadedUser.getEnabled(),
                 loadedUser.getMfaSecret(),

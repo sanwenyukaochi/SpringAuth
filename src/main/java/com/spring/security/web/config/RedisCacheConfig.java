@@ -2,7 +2,7 @@ package com.spring.security.web.config;
 
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
-import org.redisson.codec.JsonJacksonCodec;
+import org.redisson.codec.JsonJackson3Codec;
 import org.redisson.config.Config;
 import org.redisson.misc.RedisURI;
 import org.springframework.context.annotation.Bean;
@@ -20,7 +20,7 @@ public class RedisCacheConfig {
         RedisStandaloneConfiguration redisConfig =
                 ((LettuceConnectionFactory) redisConnectionFactory).getStandaloneConfiguration();
         Config redissonConfig = new Config();
-        redissonConfig.setCodec(new JsonJacksonCodec());
+        redissonConfig.setCodec(new JsonJackson3Codec());
         redissonConfig.setUsername(redisConfig.getUsername());
         redissonConfig.setPassword(new String(redisConfig.getPassword().get()));
         redissonConfig

@@ -11,7 +11,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.redisson.api.RedissonClient;
-import org.redisson.codec.TypedJsonJacksonCodec;
+import org.redisson.codec.TypedJsonJackson3Codec;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -71,7 +71,7 @@ public class JwtTokenAuthenticationProvider implements AuthenticationProvider {
     protected UserLoginInfo additionalAuthenticationChecks(String username, JwtTokenAuthenticationToken authentication)
             throws AuthenticationException {
         UserLoginInfo loadedUser = (UserLoginInfo) redissonClient
-                .getBucket(RedisCache.USER_INFO.formatted(username), new TypedJsonJacksonCodec(UserLoginInfo.class))
+                .getBucket(RedisCache.USER_INFO.formatted(username), new TypedJsonJackson3Codec(UserLoginInfo.class))
                 .get();
         log.debug("用户信息解析成功，用户: {}", loadedUser.getUsername());
         return loadedUser;

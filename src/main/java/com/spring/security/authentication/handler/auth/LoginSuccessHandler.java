@@ -17,7 +17,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.redisson.api.RedissonClient;
-import org.redisson.codec.TypedJsonJacksonCodec;
+import org.redisson.codec.TypedJsonJackson3Codec;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -78,7 +78,7 @@ public class LoginSuccessHandler extends AbstractAuthenticationTargetUrlRequestH
             redissonClient
                     .getBucket(
                             RedisCache.USER_INFO.formatted(jwtTokenUserLoginInfo.username()),
-                            new TypedJsonJacksonCodec(UserLoginInfo.class))
+                            new TypedJsonJackson3Codec(UserLoginInfo.class))
                     .set(currentUser);
 
         LoginResponse loginResponse = new LoginResponse(token, refreshToken, additionalInfo);
