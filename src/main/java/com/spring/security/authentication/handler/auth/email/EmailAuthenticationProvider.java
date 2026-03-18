@@ -2,14 +2,18 @@ package com.spring.security.authentication.handler.auth.email;
 
 import com.spring.security.authentication.handler.auth.UserLoginInfo;
 import com.spring.security.authentication.handler.authorization.Authority;
+import com.spring.security.domain.model.entity.Role;
 import com.spring.security.domain.model.entity.User;
+import com.spring.security.domain.model.entity.UserRole;
 import com.spring.security.domain.repository.UserRepository;
+import com.spring.security.domain.repository.UserRoleRepository;
 import com.spring.security.web.enums.BaseCode;
 import com.spring.security.web.exception.BaseException;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -21,6 +25,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.SpringSecurityMessageSource;
 import org.springframework.security.core.authority.FactorGrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -35,6 +40,7 @@ public class EmailAuthenticationProvider implements AuthenticationProvider {
     protected MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserRoleRepository userRoleRepository;
     private static final String AUTHORITY = Authority.EMAIL_AUTHORITY;
 
     @Override
@@ -73,7 +79,11 @@ public class EmailAuthenticationProvider implements AuthenticationProvider {
             throws AuthenticationException {
         User loadedUser =
                 userRepository.findByEmail(email).orElseThrow(() -> new BaseException(BaseCode.USER_EMAIL_NOT_FOUND));
-        Collection<GrantedAuthority> authorities = new LinkedHashSet<>();
+        Collection<GrantedAuthority> authorities = userRoleRepository.findByUser(loadedUser).stream()
+                .map(UserRole::getRole)
+                .map(Role::getCode)
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
         authorities.add(FactorGrantedAuthority.fromAuthority(AUTHORITY));
         log.debug("用户信息查询成功，用户: {}", loadedUser.getUsername());
         return new UserLoginInfo(
@@ -84,7 +94,7 @@ public class EmailAuthenticationProvider implements AuthenticationProvider {
                 loadedUser.getPhone(),
                 loadedUser.getEmail(),
                 loadedUser.getAccountNonLocked(),
-                loadedUser.getAccountNonLocked(),
+                loadedUser.getAccountNonExpired(),
                 loadedUser.getCredentialsNonExpired(),
                 loadedUser.getEnabled(),
                 loadedUser.getMfaSecret(),
