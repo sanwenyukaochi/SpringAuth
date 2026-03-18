@@ -63,7 +63,7 @@ public class UserLoginInfo implements UserDetails {
         this.enabled = enabled;
         this.mfaSecret = mfaSecret;
         this.mfaEnabled = mfaEnabled;
-        this.authorities = Collections.unmodifiableSet(sortAuthorities(authorities));
+        this.authorities = new LinkedHashSet<>(sortAuthorities(authorities));
     }
 
     private static SortedSet<GrantedAuthority> sortAuthorities(Collection<? extends GrantedAuthority> authorities) {
