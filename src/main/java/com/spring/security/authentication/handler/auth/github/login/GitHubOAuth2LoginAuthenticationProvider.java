@@ -6,10 +6,10 @@ import com.spring.security.authentication.handler.auth.github.authentication.Git
 import com.spring.security.authentication.handler.auth.github.dto.GitHubOAuth2Meta;
 import com.spring.security.authentication.handler.auth.github.service.GitHubOAuth2UserService;
 import com.spring.security.authentication.handler.authorization.Authority;
-import com.spring.security.domain.model.entity.User;
 import com.spring.security.domain.model.entity.UserIdentity;
 import com.spring.security.domain.repository.UserIdentityRepository;
 import com.spring.security.domain.repository.UserRepository;
+import com.spring.security.web.service.UserService;
 import java.util.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -38,6 +38,7 @@ public class GitHubOAuth2LoginAuthenticationProvider implements AuthenticationPr
     private final OAuth2UserService<OAuth2UserRequest, OAuth2User> gitHubOAuth2UserService;
     private final UserIdentityRepository userIdentityRepository;
     private final UserRepository userRepository;
+    private final UserService userService;
     private GrantedAuthoritiesMapper authoritiesMapper = (authorities) -> authorities;
     private final JsonMapper jsonMapper;
     private static final String AUTHORITY = Authority.AUTHORIZATION_CODE_AUTHORITY;
@@ -47,7 +48,8 @@ public class GitHubOAuth2LoginAuthenticationProvider implements AuthenticationPr
             GitHubOAuth2UserService gitHubOAuth2UserService,
             UserIdentityRepository userIdentityRepository,
             UserRepository userRepository,
-            JsonMapper jsonMapper) {
+            JsonMapper jsonMapper,
+            UserService userService) {
         Assert.notNull(
                 authorizationCodeAuthenticationProvider, "authorizationCodeAuthenticationProvider cannot be null");
         Assert.notNull(gitHubOAuth2UserService, "userService cannot be null");
@@ -58,6 +60,7 @@ public class GitHubOAuth2LoginAuthenticationProvider implements AuthenticationPr
         this.userIdentityRepository = userIdentityRepository;
         this.userRepository = userRepository;
         this.jsonMapper = jsonMapper;
+        this.userService = userService;
     }
 
     @Override
@@ -82,6 +85,7 @@ public class GitHubOAuth2LoginAuthenticationProvider implements AuthenticationPr
             OAuth2Error oauth2Error = ex.getError();
             throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString(), ex);
         }
+        Assert.notNull(authorizationCodeAuthenticationToken, "authorizationCodeAuthenticationToken cannot be null");
         OAuth2AccessToken accessToken = authorizationCodeAuthenticationToken.getAccessToken();
         Map<String, Object> additionalParameters = authorizationCodeAuthenticationToken.getAdditionalParameters();
         OAuth2User oauth2User = this.gitHubOAuth2UserService.loadUser(new OAuth2UserRequest(
@@ -91,44 +95,45 @@ public class GitHubOAuth2LoginAuthenticationProvider implements AuthenticationPr
                 new LinkedHashSet<>(this.authoritiesMapper.mapAuthorities(authorities));
         mappedAuthorities.add(FactorGrantedAuthority.fromAuthority(AUTHORITY));
         Long providerUserId = extractProviderUserId(oauth2User);
-
         // 查询用户信息
-        User loadedUser = retrieveUser(providerUserId);
-
-        // 认证通过，使用 Authenticated 为 true 的构造函数
-        // 验证用户信息
-        // 构造成功结果
-        GitHubOAuth2LoginAuthenticationToken result = new GitHubOAuth2LoginAuthenticationToken(
-                loginAuthenticationToken.getClientRegistration(),
-                loginAuthenticationToken.getAuthorizationExchange(),
-                Optional.ofNullable(loadedUser)
-                        .map(user -> new UserLoginInfo(
-                                UUID.randomUUID().toString(),
-                                user.getId(),
-                                user.getUsername(),
-                                user.getPassword(),
-                                user.getPhone(),
-                                user.getEmail(),
-                                user.getAccountNonLocked(),
-                                user.getAccountNonExpired(),
-                                user.getCredentialsNonExpired(),
-                                user.getEnabled(),
-                                user.getMfaSecret(),
-                                user.getMfaEnabled(),
-                                authorities))
-                        .orElse(null),
-                mappedAuthorities,
-                authorizationCodeAuthenticationToken.getAccessToken(),
-                authorizationCodeAuthenticationToken.getRefreshToken());
-        result.setDetails(new GitHubOAuth2Meta(
-                UserIdentity.Provider.GITHUB,
-                providerUserId,
-                oauth2User.getAttribute("login"),
-                oauth2User.getAttribute("name"),
-                oauth2User.getAttribute("email"),
-                loadedUser == null ? Boolean.TRUE : Boolean.FALSE));
-        log.debug("用户名认证成功，用户: {}", Optional.ofNullable(oauth2User.getAttribute("login")));
-        return result;
+        UserLoginInfo userLoginInfo =
+                userService.loadUserByProviderUserIdAndProvider(providerUserId, UserIdentity.Provider.GITHUB);
+        if (userLoginInfo != null) {
+            userLoginInfo.getAuthorities().add(FactorGrantedAuthority.fromAuthority(AUTHORITY));
+            log.debug("查询GitHub用户: providerUserId={}", providerUserId);
+            GitHubOAuth2LoginAuthenticationToken result = new GitHubOAuth2LoginAuthenticationToken(
+                    loginAuthenticationToken.getClientRegistration(),
+                    loginAuthenticationToken.getAuthorizationExchange(),
+                    userLoginInfo,
+                    userLoginInfo.getAuthorities(),
+                    authorizationCodeAuthenticationToken.getAccessToken(),
+                    authorizationCodeAuthenticationToken.getRefreshToken());
+            result.setDetails(new GitHubOAuth2Meta(
+                    UserIdentity.Provider.GITHUB,
+                    providerUserId,
+                    oauth2User.getAttribute("login"),
+                    oauth2User.getAttribute("name"),
+                    oauth2User.getAttribute("email"),
+                    Boolean.FALSE));
+            log.debug("用户名认证成功，用户: {}", Optional.ofNullable(oauth2User.getAttribute("login")));
+            return result;
+        } else {
+            GitHubOAuth2LoginAuthenticationToken result = new GitHubOAuth2LoginAuthenticationToken(
+                    loginAuthenticationToken.getClientRegistration(),
+                    loginAuthenticationToken.getAuthorizationExchange(),
+                    new UserLoginInfo(null, null, null, null, null, null, null, false, false, false, false, null, null),
+                    null,
+                    authorizationCodeAuthenticationToken.getAccessToken(),
+                    authorizationCodeAuthenticationToken.getRefreshToken());
+            result.setDetails(new GitHubOAuth2Meta(
+                    UserIdentity.Provider.GITHUB,
+                    providerUserId,
+                    oauth2User.getAttribute("login"),
+                    oauth2User.getAttribute("name"),
+                    oauth2User.getAttribute("email"),
+                    Boolean.TRUE));
+            return result;
+        }
     }
 
     private Long extractProviderUserId(OAuth2User oauth2User) {
@@ -148,49 +153,5 @@ public class GitHubOAuth2LoginAuthenticationProvider implements AuthenticationPr
     @Override
     public boolean supports(@NonNull Class<?> authentication) {
         return GitHubOAuth2LoginAuthenticationToken.class.isAssignableFrom(authentication);
-    }
-    //    protected Authentication createSuccessAuthentication(
-    //            Authentication authentication, User loadedUser, Collection<GrantedAuthority> mappedAuthorities) {
-    //        GitHubOAuth2AuthorizationCodeAuthenticationToken authorizationCodeAuthenticationToken =
-    //                (GitHubOAuth2AuthorizationCodeAuthenticationToken) authentication;
-    //        GitHubOAuth2LoginAuthenticationToken result = new GitHubOAuth2LoginAuthenticationToken(
-    //                authorizationCodeAuthenticationToken.getClientRegistration(),
-    //                authorizationCodeAuthenticationToken.getAuthorizationExchange(),
-    //                Optional.ofNullable(loadedUser)
-    //                        .map(user -> new UserLoginInfo(
-    //                                UUID.randomUUID().toString(),
-    //                                user.getId(),
-    //                                user.getUsername(),
-    //                                user.getPassword(),
-    //                                user.getPhone(),
-    //                                user.getEmail(),
-    //                                user.getAccountNonLocked(),
-    //                                user.getAccountNonExpired(),
-    //                                user.getCredentialsNonExpired(),
-    //                                user.getEnabled(),
-    //                                user.getMfaSecret(),
-    //                                user.getMfaEnabled(),
-    //                                authorities))
-    //                        .orElse(null),
-    //                mappedAuthorities,
-    //                authorizationCodeAuthenticationToken.getAccessToken(),
-    //                authorizationCodeAuthenticationToken.getRefreshToken());
-    //        result.setDetails(new GitHubOAuth2Meta(
-    //                UserIdentity.Provider.GITHUB,
-    //                providerUserId,
-    //                oauth2User.getAttribute("login"),
-    //                oauth2User.getAttribute("name"),
-    //                oauth2User.getAttribute("email"),
-    //                loadedUser == null ? Boolean.TRUE:Boolean.FALSE));
-    //        log.debug("用户名认证成功，用户: {}", Optional.ofNullable(oauth2User.getAttribute("login")));
-    //        return result;
-    //    }
-    protected User retrieveUser(Long providerUserId) throws AuthenticationException {
-        log.debug("查询GitHub用户: providerUserId={}", providerUserId);
-        return userIdentityRepository
-                .findByProviderUserIdAndProvider(providerUserId, UserIdentity.Provider.GITHUB)
-                .map(UserIdentity::getUserId)
-                .flatMap(userRepository::findById)
-                .orElse(null);
     }
 }
