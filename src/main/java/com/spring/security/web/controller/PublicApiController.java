@@ -1,7 +1,6 @@
 package com.spring.security.web.controller;
 
 import com.spring.security.authentication.handler.auth.oneTimeToken.service.RedisOneTimeTokenService;
-import com.spring.security.domain.model.dto.Result;
 import com.spring.security.domain.model.entity.User;
 import com.spring.security.domain.repository.UserRepository;
 import java.time.Duration;
@@ -12,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.ott.GenerateOneTimeTokenRequest;
 import org.springframework.security.authentication.ott.OneTimeToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,26 +31,26 @@ public class PublicApiController {
     private final RedisOneTimeTokenService redisOneTimeTokenService;
 
     @GetMapping
-    public Result<Map<String, String>> encode() {
+    public ResponseEntity<Map<String, String>> encode() {
         String encode = passwordEncoder.encode("admin");
-        return Result.success(
+        return ResponseEntity.ok(
                 Map.of("passwordEncoder", Optional.ofNullable(encode).orElseThrow(IllegalArgumentException::new)));
     }
 
     @GetMapping("/user")
-    public Result<Page<@NonNull Map<String, Object>>> userPage(Pageable pageable) {
+    public ResponseEntity<Page<@NonNull Map<String, Object>>> userPage(Pageable pageable) {
         Page<@NonNull User> userPage = userRepository.findAll(pageable);
-        return Result.success(userPage.map(user -> Map.of(
+        return ResponseEntity.ok(userPage.map(user -> Map.of(
                 "id", user.getId(),
                 "username", user.getUsername(),
                 "phone", user.getPhone())));
     }
 
     @PostMapping("/send-one-time-token")
-    public Result<?> sendOneTimeToken() {
+    public ResponseEntity<?> sendOneTimeToken() {
         OneTimeToken ott = redisOneTimeTokenService.generate(
                 new GenerateOneTimeTokenRequest("sanwenyukaochi", Duration.ofMinutes(5)));
         IO.println(ott.getTokenValue());
-        return Result.success(null);
+        return ResponseEntity.ok(null);
     }
 }

@@ -1,9 +1,9 @@
 package com.spring.security.web.controller;
 
 import com.spring.security.authentication.handler.auth.UserLoginInfo;
-import com.spring.security.domain.model.dto.Result;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,19 +18,19 @@ public class UserController {
     private final JsonMapper jsonMapper;
 
     @GetMapping("/info")
-    public Result<UserLoginInfo> getUserInfo(Authentication authentication) {
+    public ResponseEntity<UserLoginInfo> getUserInfo(Authentication authentication) {
         UserLoginInfo userLoginInfo = (UserLoginInfo) authentication.getPrincipal();
         log.info("用户登录信息：{}", jsonMapper.writeValueAsString(userLoginInfo));
-        return Result.success(userLoginInfo);
+        return ResponseEntity.ok(userLoginInfo);
     }
 
     @GetMapping("/details")
-    public Result<Object> getDetails(Authentication authentication) {
-        return Result.success(authentication.getDetails());
+    public ResponseEntity<Object> getDetails(Authentication authentication) {
+        return ResponseEntity.ok(authentication.getDetails());
     }
 
     @GetMapping("/principal")
-    public Result<Object> getPrincipal(Authentication authentication) {
-        return Result.success(authentication.getPrincipal());
+    public ResponseEntity<Object> getPrincipal(Authentication authentication) {
+        return ResponseEntity.ok(authentication.getPrincipal());
     }
 }

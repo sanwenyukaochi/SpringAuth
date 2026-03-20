@@ -8,8 +8,7 @@ import com.spring.security.domain.model.entity.UserRole;
 import com.spring.security.domain.repository.UserIdentityRepository;
 import com.spring.security.domain.repository.UserRepository;
 import com.spring.security.domain.repository.UserRoleRepository;
-import com.spring.security.web.enums.BaseCode;
-import com.spring.security.web.exception.BaseException;
+import com.spring.security.web.exception.UserNotFoundException;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.UUID;
@@ -28,19 +27,27 @@ public class UserService {
     private final UserIdentityRepository userIdentityRepository;
 
     public User getUserByUsername(String username) {
-        return userRepository.findByUsername(username).orElseThrow(() -> new BaseException(BaseCode.USER_NOT_FOUND));
+        return userRepository
+                .findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found by username: " + username));
     }
 
     public User getUserByPhone(String phone) {
-        return userRepository.findByPhone(phone).orElseThrow(() -> new BaseException(BaseCode.USER_PHONE_NOT_FOUND));
+        return userRepository
+                .findByPhone(phone)
+                .orElseThrow(() -> new UserNotFoundException("User not found by phone: " + phone));
     }
 
     public User getUserByEmail(String email) {
-        return userRepository.findByEmail(email).orElseThrow(() -> new BaseException(BaseCode.USER_EMAIL_NOT_FOUND));
+        return userRepository
+                .findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found by email: " + email));
     }
 
     public User findById(Long userId) {
-        return userRepository.findById(userId).orElseThrow(() -> new BaseException(BaseCode.USER_NOT_FOUND));
+        return userRepository
+                .findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found by id: " + userId));
     }
 
     public UserLoginInfo loadUserByUsername(String username) {
