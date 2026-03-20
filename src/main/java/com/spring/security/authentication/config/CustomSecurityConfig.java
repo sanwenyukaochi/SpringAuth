@@ -21,8 +21,10 @@ import com.spring.security.authentication.handler.auth.user.UsernameAuthenticati
 import com.spring.security.authentication.handler.exception.CustomAuthenticationExceptionHandler;
 import com.spring.security.authentication.handler.exception.CustomAuthorizationExceptionHandler;
 import com.spring.security.authentication.handler.exception.CustomSecurityExceptionHandler;
+import com.spring.security.web.filter.LocaleContextFilter;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -45,6 +47,8 @@ import tools.jackson.databind.json.JsonMapper;
 @RequiredArgsConstructor
 public class CustomSecurityConfig {
 
+    private final LocaleContextFilter localeContextFilter;
+    private final MessageSource messageSource;
     private final CustomAuthenticationExceptionHandler authenticationExceptionHandler;
     private final CustomAuthorizationExceptionHandler authorizationExceptionHandler;
     private final CustomSecurityExceptionHandler globalSpringSecurityExceptionHandler;
@@ -87,6 +91,7 @@ public class CustomSecurityConfig {
         });
         // 其他未知异常. 尽量提前加载。
         httpSecurity.addFilterBefore(globalSpringSecurityExceptionHandler, SecurityContextHolderFilter.class);
+        httpSecurity.addFilterBefore(localeContextFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
     /**
@@ -124,7 +129,8 @@ public class CustomSecurityConfig {
                 new ProviderManager(List.of(usernameAuthenticationProvider)),
                 loginSuccessHandler,
                 loginFailHandler,
-                jsonMapper);
+                jsonMapper,
+                messageSource);
         httpSecurity.addFilterBefore(usernameAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         // 短信验证码认证过滤器
@@ -132,7 +138,8 @@ public class CustomSecurityConfig {
                 new ProviderManager(List.of(smsAuthenticationProvider)),
                 loginSuccessHandler,
                 loginFailHandler,
-                jsonMapper);
+                jsonMapper,
+                messageSource);
         httpSecurity.addFilterBefore(smsAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         // 邮箱密码认证过滤器
@@ -140,7 +147,8 @@ public class CustomSecurityConfig {
                 new ProviderManager(List.of(emailAuthenticationProvider)),
                 loginSuccessHandler,
                 loginFailHandler,
-                jsonMapper);
+                jsonMapper,
+                messageSource);
         httpSecurity.addFilterBefore(emailAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         // 一次性认证过滤器
@@ -148,7 +156,8 @@ public class CustomSecurityConfig {
                 new ProviderManager(List.of(oneTimeTokenAuthenticationProvider)),
                 loginSuccessHandler,
                 loginFailHandler,
-                jsonMapper);
+                jsonMapper,
+                messageSource);
         httpSecurity.addFilterBefore(oneTimeTokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         // GitHub OAuth2 授权请求过滤器 - 负责跳转到GitHub登录页
@@ -221,7 +230,7 @@ public class CustomSecurityConfig {
 
         // 创建JWT认证过滤器，使用AuthenticationManager
         JwtTokenAuthenticationFilter jwtFilter = new JwtTokenAuthenticationFilter(
-                jwtService, new ProviderManager(List.of(jwtTokenAuthenticationProvider)));
+                jwtService, new ProviderManager(List.of(jwtTokenAuthenticationProvider)), messageSource);
         jwtFilter.setPostOnly(false);
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

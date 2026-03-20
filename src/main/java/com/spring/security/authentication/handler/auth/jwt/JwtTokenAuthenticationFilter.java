@@ -11,6 +11,8 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -41,6 +43,7 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final MessageSource messageSource;
     private boolean postOnly = true;
 
     @Override
@@ -51,7 +54,10 @@ public class JwtTokenAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         log.debug("use JwtTokenAuthenticationFilter");
         if (this.postOnly && !request.getMethod().equals(HttpMethod.POST.name())) {
-            throw new AuthenticationServiceException("Authentication method not supported: " + request.getMethod());
+            throw new AuthenticationServiceException(messageSource.getMessage(
+                    "error.auth.method_not_supported",
+                    new Object[] {request.getMethod()},
+                    LocaleContextHolder.getLocale()));
         }
         // 提取请求数据
         String jwtToken = jwtService.getJwtFromHeader(request);
