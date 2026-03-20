@@ -2,7 +2,6 @@ package com.spring.security.authentication.config;
 
 import com.spring.security.authentication.handler.auth.LoginFailHandler;
 import com.spring.security.authentication.handler.auth.LoginSuccessHandler;
-import com.spring.security.authentication.handler.auth.def.DefaultApiAuthenticationFilter;
 import com.spring.security.authentication.handler.auth.email.EmailAuthenticationFilter;
 import com.spring.security.authentication.handler.auth.email.EmailAuthenticationProvider;
 import com.spring.security.authentication.handler.auth.github.GitHubOAuth2AuthorizationRedirectFilter;
@@ -24,7 +23,6 @@ import com.spring.security.authentication.handler.exception.CustomAuthorizationE
 import com.spring.security.authentication.handler.exception.CustomSecurityExceptionHandler;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -187,9 +185,9 @@ public class CustomSecurityConfig {
                 .securityMatcher("/api/open-api/**")
                 .authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated());
 
-        //        OpenApiAuthenticationFilter openApiFilter = new OpenApiAuthenticationFilter();
+        // OpenApiAuthenticationFilter openApiFilter = new OpenApiAuthenticationFilter();
         // 加一个登录方式。用户名、密码登录
-        //        httpSecurity.addFilterBefore(openApiFilter, UsernamePasswordAuthenticationFilter.class);
+        // httpSecurity.addFilterBefore(openApiFilter, UsernamePasswordAuthenticationFilter.class);
         return httpSecurity.build();
     }
 
@@ -229,20 +227,20 @@ public class CustomSecurityConfig {
         return http.build();
     }
 
-    /**
-     * 其余路径，走这个默认过滤链
+    /*     其余路径，走这个默认过滤链
+     *     @Bean
+     *     @Order(value = Integer.MAX_VALUE) // 这个过滤链最后加载
+     *     @ConditionalOnProperty(
+     *             name = "spring.security.default-api-filter-chain",
+     *             havingValue = "true",
+     *             matchIfMissing = false)
+     *     public SecurityFilterChain defaultApiFilterChain(HttpSecurity http) {
+     *         commonHttpSetting(http);
+     *         // 不用securityMatcher表示缺省值，匹配不上其他过滤链时，都走这个过滤链
+     *         http.authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated());
+     *         http.addFilterBefore(new DefaultApiAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+     *         return http.build();
+     *     }
      */
-    @Bean
-    @Order(value = Integer.MAX_VALUE) // 这个过滤链最后加载
-    @ConditionalOnProperty(
-            name = "spring.security.default-api-filter-chain",
-            havingValue = "true",
-            matchIfMissing = false)
-    public SecurityFilterChain defaultApiFilterChain(HttpSecurity http) {
-        commonHttpSetting(http);
-        // 不用securityMatcher表示缺省值，匹配不上其他过滤链时，都走这个过滤链
-        http.authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated());
-        http.addFilterBefore(new DefaultApiAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
-        return http.build();
-    }
+
 }
