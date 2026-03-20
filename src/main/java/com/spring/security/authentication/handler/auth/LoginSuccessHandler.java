@@ -3,10 +3,7 @@ package com.spring.security.authentication.handler.auth;
 import com.spring.security.authentication.handler.auth.jwt.constant.JWTConstants;
 import com.spring.security.authentication.handler.auth.jwt.dto.JwtTokenUserLoginInfo;
 import com.spring.security.authentication.handler.auth.jwt.service.JwtService;
-import com.spring.security.domain.model.dto.Result;
 import com.spring.security.web.constant.RedisCache;
-import com.spring.security.web.enums.BaseCode;
-import com.spring.security.web.exception.BaseException;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,6 +17,7 @@ import org.redisson.api.RedissonClient;
 import org.redisson.codec.TypedJsonJackson3Codec;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AbstractAuthenticationTargetUrlRequestHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -56,7 +54,7 @@ public class LoginSuccessHandler extends AbstractAuthenticationTargetUrlRequestH
                 .map(Authentication::getPrincipal)
                 .filter(UserLoginInfo.class::isInstance)
                 .map(UserLoginInfo.class::cast)
-                .orElseThrow(() -> new BaseException(BaseCode.AUTHENTICATION_TYPE_ERROR));
+                .orElseThrow(() -> new AuthenticationCredentialsNotFoundException("当前未找到有效的登录用户信息"));
         JwtTokenUserLoginInfo jwtTokenUserLoginInfo =
                 new JwtTokenUserLoginInfo(currentUser.getSessionId(), currentUser.getUsername());
         // 一些特殊的登录参数。比如三方登录，需要额外返回一个字段是否需要跳转的绑定已有账号页面
@@ -86,6 +84,6 @@ public class LoginSuccessHandler extends AbstractAuthenticationTargetUrlRequestH
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpStatus.OK.value());
-        jsonMapper.writeValue(response.getOutputStream(), Result.success(loginResponse));
+        jsonMapper.writeValue(response.getOutputStream(), loginResponse);
     }
 }

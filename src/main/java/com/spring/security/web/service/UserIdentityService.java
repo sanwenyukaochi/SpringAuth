@@ -2,8 +2,7 @@ package com.spring.security.web.service;
 
 import com.spring.security.domain.model.entity.UserIdentity;
 import com.spring.security.domain.repository.UserIdentityRepository;
-import com.spring.security.web.enums.BaseCode;
-import com.spring.security.web.exception.BaseException;
+import com.spring.security.web.exception.UserIdentityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,6 +18,7 @@ public class UserIdentityService {
             Long providerUserId, UserIdentity.Provider provider) {
         return userIdentityRepository
                 .findByProviderUserIdAndProvider(providerUserId, provider)
-                .orElseThrow(() -> new BaseException(BaseCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new UserIdentityNotFoundException(
+                        "User identity not found, providerUserId=" + providerUserId + ", provider=" + provider));
     }
 }

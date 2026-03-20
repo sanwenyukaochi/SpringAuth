@@ -2,14 +2,7 @@ package com.spring.security.authentication.handler.auth.jwt.service;
 
 import com.spring.security.authentication.handler.auth.jwt.constant.JWTConstants;
 import com.spring.security.authentication.handler.auth.jwt.dto.JwtTokenUserLoginInfo;
-import com.spring.security.web.enums.BaseCode;
-import com.spring.security.web.exception.BaseException;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
@@ -75,19 +68,20 @@ public class JwtService {
             return jsonMapper.readValue(json, JwtTokenUserLoginInfo.class);
         } catch (MalformedJwtException e) {
             log.error("JWT Token 无效: {}", e.getMessage());
-            throw new BaseException(BaseCode.TOKEN_MALFORMED);
-        } catch (ExpiredJwtException e) {
-            log.error("JWT 已过期: {}", e.getMessage());
-            throw new BaseException(BaseCode.TOKEN_EXPIRED);
+            throw new MalformedJwtException(e.getMessage());
+            // TODO
+            //        } catch (ExpiredJwtException e) {
+            //            log.error("JWT 已过期: {}", e.getMessage());
+            //            throw new ExpiredJwtException();
         } catch (UnsupportedJwtException e) {
             log.error("JWT 不受支持: {}", e.getMessage());
-            throw new BaseException(BaseCode.TOKEN_UNSUPPORTED);
+            throw new UnsupportedJwtException(e.getMessage());
         } catch (IllegalArgumentException e) {
             log.error("JWT 内容为空: {}", e.getMessage());
-            throw new BaseException(BaseCode.TOKEN_EMPTY);
-        } catch (Exception e) {
+            throw new IllegalArgumentException(e.getMessage());
+        } catch (JwtException e) {
             log.error("JWT 解析异常: {}", e.getMessage());
-            throw new BaseException(BaseCode.TOKEN_PARSE_ERROR);
+            throw new JwtException(e.getMessage());
         }
     }
 }
