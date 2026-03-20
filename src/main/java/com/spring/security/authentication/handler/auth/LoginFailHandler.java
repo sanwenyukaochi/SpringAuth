@@ -1,7 +1,5 @@
 package com.spring.security.authentication.handler.auth;
 
-import com.spring.security.domain.model.dto.Result;
-import com.spring.security.web.enums.BaseCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -11,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ProblemDetail;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
@@ -32,11 +31,11 @@ public class LoginFailHandler implements AuthenticationFailureHandler {
             @NonNull AuthenticationException authenticationException)
             throws IOException {
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         log.warn("登录异常：msg={}", authenticationException.getMessage(), authenticationException);
         jsonMapper.writeValue(
                 response.getOutputStream(),
-                Result.error(BaseCode.AUTH_LOGIN_FAILED.getCode(), authenticationException.getMessage(), null));
+                ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, authenticationException.getMessage()));
     }
 }

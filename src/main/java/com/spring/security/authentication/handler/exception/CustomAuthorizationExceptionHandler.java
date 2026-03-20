@@ -1,7 +1,5 @@
 package com.spring.security.authentication.handler.exception;
 
-import com.spring.security.domain.model.dto.Result;
-import com.spring.security.web.enums.BaseCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -11,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ProblemDetail;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
@@ -36,6 +35,8 @@ public class CustomAuthorizationExceptionHandler implements AccessDeniedHandler 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpStatus.FORBIDDEN.value());
         log.warn("访问异常：msg={}", accessDeniedException.getMessage(), accessDeniedException);
-        jsonMapper.writeValue(response.getOutputStream(), Result.error(BaseCode.AUTH_ACCESS_DENIED, null));
+        jsonMapper.writeValue(
+                response.getOutputStream(),
+                ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, accessDeniedException.getMessage()));
     }
 }
