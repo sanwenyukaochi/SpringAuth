@@ -1,18 +1,14 @@
 package com.spring.security.web.service;
 
 import com.spring.security.authentication.handler.auth.UserLoginInfo;
-import com.spring.security.domain.model.entity.Role;
-import com.spring.security.domain.model.entity.User;
-import com.spring.security.domain.model.entity.UserIdentity;
-import com.spring.security.domain.model.entity.UserRole;
+import com.spring.security.domain.model.entity.*;
 import com.spring.security.domain.repository.UserIdentityRepository;
 import com.spring.security.domain.repository.UserRepository;
 import com.spring.security.domain.repository.UserRoleRepository;
 import com.spring.security.web.exception.UserNotFoundException;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -52,10 +48,21 @@ public class UserService {
 
     public UserLoginInfo loadUserByUsername(String username) {
         User loadedUser = getUserByUsername(username);
-        Collection<GrantedAuthority> authorities = userRoleRepository.findByUser(loadedUser).stream()
+        List<String> role = loadedUser.getUserRoles().stream()
                 .map(UserRole::getRole)
                 .map(Role::getCode)
-                .map(SimpleGrantedAuthority::new)
+                .map(roleCode -> "ROLE_" + roleCode)
+                .toList();
+        List<String> permission = loadedUser.getUserRoles().stream()
+                .map(UserRole::getRole)
+                .map(Role::getRolePermissions)
+                .flatMap(Set::stream)
+                .map(RolePermission::getPermission)
+                .map(Permission::getCode)
+                .toList();
+        Collection<GrantedAuthority> authorities = Stream.concat(
+                        role.stream().map(SimpleGrantedAuthority::new),
+                        permission.stream().map(SimpleGrantedAuthority::new))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         return new UserLoginInfo(
                 UUID.randomUUID().toString(),
@@ -75,10 +82,21 @@ public class UserService {
 
     public UserLoginInfo loadUserByEmail(String email) {
         User loadedUser = getUserByEmail(email);
-        Collection<GrantedAuthority> authorities = userRoleRepository.findByUser(loadedUser).stream()
+        List<String> role = loadedUser.getUserRoles().stream()
                 .map(UserRole::getRole)
                 .map(Role::getCode)
-                .map(SimpleGrantedAuthority::new)
+                .map(roleCode -> "ROLE_" + roleCode)
+                .toList();
+        List<String> permission = loadedUser.getUserRoles().stream()
+                .map(UserRole::getRole)
+                .map(Role::getRolePermissions)
+                .flatMap(Set::stream)
+                .map(RolePermission::getPermission)
+                .map(Permission::getCode)
+                .toList();
+        Collection<GrantedAuthority> authorities = Stream.concat(
+                        role.stream().map(SimpleGrantedAuthority::new),
+                        permission.stream().map(SimpleGrantedAuthority::new))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         return new UserLoginInfo(
                 UUID.randomUUID().toString(),
@@ -105,10 +123,21 @@ public class UserService {
         if (loadedUser == null) {
             return null;
         }
-        Collection<GrantedAuthority> authorities = userRoleRepository.findByUser(loadedUser).stream()
+        List<String> role = loadedUser.getUserRoles().stream()
                 .map(UserRole::getRole)
                 .map(Role::getCode)
-                .map(SimpleGrantedAuthority::new)
+                .map(roleCode -> "ROLE_" + roleCode)
+                .toList();
+        List<String> permission = loadedUser.getUserRoles().stream()
+                .map(UserRole::getRole)
+                .map(Role::getRolePermissions)
+                .flatMap(Set::stream)
+                .map(RolePermission::getPermission)
+                .map(Permission::getCode)
+                .toList();
+        Collection<GrantedAuthority> authorities = Stream.concat(
+                        role.stream().map(SimpleGrantedAuthority::new),
+                        permission.stream().map(SimpleGrantedAuthority::new))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         return new UserLoginInfo(
                 UUID.randomUUID().toString(),
@@ -128,10 +157,21 @@ public class UserService {
 
     public UserLoginInfo loadUserByPhone(String phone) {
         User loadedUser = getUserByPhone(phone);
-        Collection<GrantedAuthority> authorities = userRoleRepository.findByUser(loadedUser).stream()
+        List<String> role = loadedUser.getUserRoles().stream()
                 .map(UserRole::getRole)
                 .map(Role::getCode)
-                .map(SimpleGrantedAuthority::new)
+                .map(roleCode -> "ROLE_" + roleCode)
+                .toList();
+        List<String> permission = loadedUser.getUserRoles().stream()
+                .map(UserRole::getRole)
+                .map(Role::getRolePermissions)
+                .flatMap(Set::stream)
+                .map(RolePermission::getPermission)
+                .map(Permission::getCode)
+                .toList();
+        Collection<GrantedAuthority> authorities = Stream.concat(
+                        role.stream().map(SimpleGrantedAuthority::new),
+                        permission.stream().map(SimpleGrantedAuthority::new))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         return new UserLoginInfo(
                 UUID.randomUUID().toString(),

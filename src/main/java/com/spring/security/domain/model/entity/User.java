@@ -2,10 +2,9 @@ package com.spring.security.domain.model.entity;
 
 import com.spring.security.domain.model.entity.base.BaseEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.*;
 import lombok.experimental.Accessors;
 
@@ -62,4 +61,8 @@ public class User extends BaseEntity {
     @Schema(title = "是否启用双因素认证")
     @Column(comment = "是否启用双因素认证（true=启用，false=未启用）", name = "mfa_enabled", nullable = false)
     private Boolean mfaEnabled = false;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @ToString.Exclude
+    private Set<UserRole> userRoles = new HashSet<>();
 }
