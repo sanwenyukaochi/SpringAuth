@@ -12,13 +12,13 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @Entity
 @Table(
-        name = "sys_role",
-        uniqueConstraints = {@UniqueConstraint(name = "uk_role_code", columnNames = "code")},
-        comment = "角色表")
-@Schema(title = "系统角色实体")
-public class Role extends BaseEntity {
+        name = "sys_permission",
+        uniqueConstraints = {@UniqueConstraint(name = "uk_permission_code", columnNames = "code")},
+        comment = "权限表")
+@Schema(title = "系统权限实体")
+public class Permission extends BaseEntity {
 
-    @Schema(title = "角色编码")
-    @Column(comment = "角色编码", name = "code", length = 10, nullable = false)
+    @Schema(title = "权限编码")
+    @Column(comment = "权限编码", name = "code", length = 30, nullable = false)
     private String code;
 }
