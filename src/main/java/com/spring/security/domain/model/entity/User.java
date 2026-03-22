@@ -8,8 +8,8 @@ import java.util.Set;
 import lombok.*;
 import lombok.experimental.Accessors;
 
-@EqualsAndHashCode(callSuper = true)
-@Data
+@Getter
+@Setter
 @Accessors(chain = true)
 @Entity
 @Table(

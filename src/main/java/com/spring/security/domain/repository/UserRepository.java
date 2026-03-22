@@ -3,6 +3,7 @@ package com.spring.security.domain.repository;
 import com.spring.security.domain.model.entity.User;
 import java.util.Optional;
 import org.jspecify.annotations.NonNull;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,11 +12,38 @@ public interface UserRepository extends JpaRepository<@NonNull User, @NonNull Lo
 
     Optional<User> findByUsername(String username);
 
-    boolean existsByUsername(String user);
-
-    boolean existsByEmail(String email);
-
     Optional<User> findByEmail(String email);
 
     Optional<User> findByPhone(String phone);
+
+    @EntityGraph(
+            attributePaths = {
+                "userRoles",
+                "userRoles.role",
+                "userRoles.role.rolePermissions",
+                "userRoles.role.rolePermissions.permission"
+            })
+    Optional<User> findWithAuthoritiesByUsername(String username);
+
+    @EntityGraph(
+            attributePaths = {
+                "userRoles",
+                "userRoles.role",
+                "userRoles.role.rolePermissions",
+                "userRoles.role.rolePermissions.permission"
+            })
+    Optional<User> findWithAuthoritiesByEmail(String email);
+
+    @EntityGraph(
+            attributePaths = {
+                "userRoles",
+                "userRoles.role",
+                "userRoles.role.rolePermissions",
+                "userRoles.role.rolePermissions.permission"
+            })
+    Optional<User> findWithAuthoritiesByPhone(String phone);
+
+    boolean existsByUsername(String user);
+
+    boolean existsByEmail(String email);
 }

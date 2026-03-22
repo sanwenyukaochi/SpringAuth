@@ -3,11 +3,11 @@ package com.spring.security.domain.model.entity;
 import com.spring.security.domain.model.entity.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.Accessors;
 
-@EqualsAndHashCode(callSuper = true)
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter
+@Setter
+@Accessors(chain = true)
 @Entity
 @Table(
         name = "sys_role_permission_rel",

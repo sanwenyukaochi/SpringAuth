@@ -3,13 +3,11 @@ package com.spring.security.domain.model.entity;
 import com.spring.security.domain.model.entity.base.BaseEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import lombok.experimental.Accessors;
 
-@Data
-@EqualsAndHashCode(callSuper = true)
+@Getter
+@Setter
 @Accessors(chain = true)
 @Entity
 @Table(

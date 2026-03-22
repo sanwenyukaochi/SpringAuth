@@ -5,13 +5,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.*;
 import lombok.experimental.Accessors;
 
-@EqualsAndHashCode(callSuper = true)
-@Data
+@Getter
+@Setter
 @Accessors(chain = true)
 @Entity
 @Table(

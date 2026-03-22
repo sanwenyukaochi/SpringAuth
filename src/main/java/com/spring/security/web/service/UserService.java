@@ -47,7 +47,9 @@ public class UserService {
     }
 
     public UserLoginInfo loadUserByUsername(String username) {
-        User loadedUser = getUserByUsername(username);
+        User loadedUser = userRepository
+                .findWithAuthoritiesByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found by username: " + username));
         List<String> role = loadedUser.getUserRoles().stream()
                 .map(UserRole::getRole)
                 .map(Role::getCode)
@@ -81,7 +83,9 @@ public class UserService {
     }
 
     public UserLoginInfo loadUserByEmail(String email) {
-        User loadedUser = getUserByEmail(email);
+        User loadedUser = userRepository
+                .findWithAuthoritiesByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found by email: " + email));
         List<String> role = loadedUser.getUserRoles().stream()
                 .map(UserRole::getRole)
                 .map(Role::getCode)
@@ -156,7 +160,9 @@ public class UserService {
     }
 
     public UserLoginInfo loadUserByPhone(String phone) {
-        User loadedUser = getUserByPhone(phone);
+        User loadedUser = userRepository
+                .findWithAuthoritiesByPhone(phone)
+                .orElseThrow(() -> new UserNotFoundException("User not found by phone: " + phone));
         List<String> role = loadedUser.getUserRoles().stream()
                 .map(UserRole::getRole)
                 .map(Role::getCode)
