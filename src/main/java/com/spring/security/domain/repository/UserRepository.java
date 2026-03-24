@@ -3,6 +3,7 @@ package com.spring.security.domain.repository;
 import com.spring.security.domain.model.entity.User;
 import java.util.Optional;
 import org.jspecify.annotations.NonNull;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -46,4 +47,8 @@ public interface UserRepository extends JpaRepository<@NonNull User, @NonNull Lo
     boolean existsByUsername(String user);
 
     boolean existsByEmail(String email);
+
+    Slice<User> findByOrderByUsernameAsc(Pageable pageable);
+
+    Window<User> findFirst6ByOrderByUsernameAsc(KeysetScrollPosition position);
 }

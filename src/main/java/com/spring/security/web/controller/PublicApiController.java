@@ -9,16 +9,12 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.ott.GenerateOneTimeTokenRequest;
 import org.springframework.security.authentication.ott.OneTimeToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -37,10 +33,19 @@ public class PublicApiController {
                 Map.of("passwordEncoder", Optional.ofNullable(encode).orElseThrow(IllegalArgumentException::new)));
     }
 
-    @GetMapping("/user")
+    @GetMapping("/userPage")
     public ResponseEntity<Page<@NonNull Map<String, Object>>> userPage(Pageable pageable) {
         Page<@NonNull User> userPage = userRepository.findAll(pageable);
         return ResponseEntity.ok(userPage.map(user -> Map.of(
+                "id", user.getId(),
+                "username", user.getUsername(),
+                "phone", user.getPhone())));
+    }
+
+    @GetMapping("/userSlice")
+    public ResponseEntity<Slice<@NonNull Map<String, Object>>> userSlice(Pageable pageable) {
+        Slice<User> userSlice = userRepository.findByOrderByUsernameAsc(pageable);
+        return ResponseEntity.ok(userSlice.map(user -> Map.of(
                 "id", user.getId(),
                 "username", user.getUsername(),
                 "phone", user.getPhone())));
