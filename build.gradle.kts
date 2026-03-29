@@ -3,7 +3,7 @@ import com.gorylenko.GitPropertiesPluginExtension
 import org.springframework.boot.gradle.dsl.SpringBootExtension
 
 plugins {
-    id("java")
+    java
     id("org.springframework.boot") version "4.0.5"
     id("io.spring.dependency-management") version "1.1.7"
     id("com.gorylenko.gradle-git-properties") version "2.5.7"
@@ -14,12 +14,12 @@ group = "com.spring.security"
 version = "0.0.1-SNAPSHOT"
 description = "project-security"
 
-val springdocVersion by extra("3.0.2")
-val commonsLangVersion by extra("3.20.0")
-val jjwtVersion by extra("0.13.0")
-val postgresqlVersion by extra("42.7.10")
-val jspecifyVersion by extra("1.0.0")
-val redissonVersion by extra("4.3.0")
+extra["springdocVersion"] = "3.0.2"
+extra["commonsLangVersion"] = "3.20.0"
+extra["jjwtVersion"] = "0.13.0"
+extra["postgresqlVersion"] = "42.7.10"
+extra["jspecifyVersion"] = "1.0.0"
+extra["redissonVersion"] = "4.3.0"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -32,14 +32,14 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-flyway")
     runtimeOnly("org.flywaydb:flyway-database-postgresql")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
-    implementation("org.redisson:redisson:$redissonVersion")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springdocVersion")
-    implementation("org.apache.commons:commons-lang3:$commonsLangVersion")
-    implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
-    runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
-    runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
-    runtimeOnly("org.postgresql:postgresql:$postgresqlVersion")
-    implementation("org.jspecify:jspecify:$jspecifyVersion")
+    implementation("org.redisson:redisson:${property("redissonVersion")}")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:${property("springdocVersion")}")
+    implementation("org.apache.commons:commons-lang3:${property("commonsLangVersion")}")
+    implementation("io.jsonwebtoken:jjwt-api:${property("jjwtVersion")}")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:${property("jjwtVersion")}")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:${property("jjwtVersion")}")
+    runtimeOnly("org.postgresql:postgresql:${property("postgresqlVersion")}")
+    implementation("org.jspecify:jspecify:${property("jspecifyVersion")}")
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
 
@@ -120,7 +120,7 @@ pluginManager.withPlugin("com.diffplug.spotless") {
     }
 }
 
-tasks.test {
+tasks.withType<Test> {
     useJUnitPlatform()
 }
 
