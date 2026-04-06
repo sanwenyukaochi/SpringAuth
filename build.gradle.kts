@@ -19,7 +19,7 @@ val commonsLangVersion by extra("3.20.0")
 val jjwtVersion by extra("0.13.0")
 val postgresqlVersion by extra("42.7.10")
 val jspecifyVersion by extra("1.0.0")
-val redissonVersion by extra("4.3.0")
+val redissonVersion by extra("4.3.1")
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
