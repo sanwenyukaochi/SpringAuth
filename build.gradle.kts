@@ -14,7 +14,7 @@ group = "com.spring.security"
 version = "0.0.1-SNAPSHOT"
 description = "project-security"
 
-val springdocVersion by extra("3.0.2")
+val springdocVersion by extra("3.0.3")
 val commonsLangVersion by extra("3.20.0")
 val jjwtVersion by extra("0.13.0")
 val postgresqlVersion by extra("42.7.10")
