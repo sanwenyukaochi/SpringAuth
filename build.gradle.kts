@@ -4,7 +4,7 @@ import org.springframework.boot.gradle.dsl.SpringBootExtension
 
 plugins {
     id("java")
-    id("org.springframework.boot") version "4.0.5"
+    id("org.springframework.boot") version "4.0.6"
     id("io.spring.dependency-management") version "1.1.7"
     id("com.gorylenko.gradle-git-properties") version "2.5.7"
     id("com.diffplug.spotless") version "8.4.0"
