@@ -17,7 +17,7 @@ description = "project-security"
 val springdocVersion by extra("3.0.2")
 val commonsLangVersion by extra("3.20.0")
 val jjwtVersion by extra("0.13.0")
-val postgresqlVersion by extra("42.7.10")
+val postgresqlVersion by extra("42.7.13")
 val jspecifyVersion by extra("1.0.0")
 val redissonVersion by extra("4.3.0")
 
